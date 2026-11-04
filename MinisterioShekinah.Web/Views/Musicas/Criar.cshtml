@@ -1,21 +1,17 @@
 ﻿@model MinisterioShekinah.Web.Models.Musica
-
 @{
     ViewData["Title"] = "Adicionar Nova Música";
 }
-
 <div class="container my-5" style="max-width: 800px;">
     <div class="card bg-dark border-warning shadow-lg p-4 rounded-4">
         <div class="card-body">
             <h2 class="text-warning fw-bold mb-3 text-center"><i class="bi bi-plus-circle"></i> Adicionar Nova Música</h2>
             <p class="text-light text-center opacity-75 mb-4">Insira os dados da canção e a respetiva cifra para o repertório da paróquia.</p>
-
             <form asp-action="Criar">
                 <div class="mb-3">
                     <label asp-for="Titulo" class="form-label text-warning fw-bold">Título da Música</label>
                     <input asp-for="Titulo" class="form-control bg-black text-light border-secondary" placeholder="Ex: Cordeiro de Deus" required />
                 </div>
-
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="Artista" class="form-label text-warning fw-bold">Artista / Ministério</label>
@@ -31,17 +27,35 @@
                     </div>
                 </div>
 
+                <!-- Novo campo adicionado para o Momento Litúrgico -->
+                <div class="mb-3">
+                    <label asp-for="MomentoLiturgico" class="form-label text-warning fw-bold">Momento Litúrgico / Canto</label>
+                    <select asp-for="MomentoLiturgico" class="form-select bg-black text-light border-secondary">
+                        <option value="">Selecione o momento da Missa (Opcional)...</option>
+                        <option value="Entrada">Entrada</option>
+                        <option value="Ato Penitencial">Ato Penitencial</option>
+                        <option value="Hino de Louvor (Glória)">Hino de Louvor (Glória)</option>
+                        <option value="Salmo Responsorial">Salmo Responsorial</option>
+                        <option value="Aclamação ao Evangelho">Aclamação ao Evangelho (Aleluia)</option>
+                        <option value="Ofertório">Ofertório</option>
+                        <option value="Santo">Santo</option>
+                        <option value="Cordeiro de Deus">Cordeiro de Deus</option>
+                        <option value="Comunhão">Comunhão</option>
+                        <option value="Pós-Comunhão">Pós-Comunhão / Ação de Graças</option>
+                        <option value="Final / Envio">Final / Envio</option>
+                        <option value="Adoração / Louvor Geral">Adoração / Louvor Geral</option>
+                    </select>
+                </div>
+
                 <div class="mb-3">
                     <label asp-for="Cifra" class="form-label text-warning fw-bold">Cifra com Acordes entre Colchetes</label>
                     <textarea asp-for="Cifra" rows="10" class="form-control bg-black text-light border-secondary font-monospace" placeholder="Ex: [G]       [D/F#]&#10;Vem com Tua glória..." required></textarea>
                     <small class="text-muted">Dica: Coloque os acordes entre parênteses rectos (ex: `[G]`, `[D/F#]`) para que o sistema permita transpor o tom automaticamente.</small>
                 </div>
-
                 <div class="mb-4">
                     <label asp-for="PartituraUrl" class="form-label text-warning fw-bold">Link da Partitura (Opcional)</label>
                     <input asp-for="PartituraUrl" class="form-control bg-black text-light border-secondary" placeholder="URL para PDF ou partitura" />
                 </div>
-
                 <div class="d-flex justify-content-between">
                     <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light">Voltar ao Repertório</a>
                     <button type="submit" class="btn btn-warning text-dark fw-bold px-4">Salvar Música</button>
@@ -50,17 +64,17 @@
         </div>
     </div>
 </div>
-
 <style>
     body {
         background-color: #121212;
         color: #f8f9fa;
     }
 
-    .form-control:focus {
+    .form-control:focus, .form-select:focus {
         background-color: #000;
         color: #fff;
         border-color: #dfb235;
         box-shadow: 0 0 0 0.25rem rgba(223, 178, 53, 0.25);
     }
 </style>
+```[file-tag: code-generated-file-7013ffeb-7422-4952-b88d-ee9c63673dbb]

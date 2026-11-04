@@ -20,5 +20,8 @@ namespace MinisterioShekinah.Web.Models
         public string Cifra { get; set; } = string.Empty;
 
         public string? PartituraUrl { get; set; } // Link ou caminho do PDF/Imagem da partitura
+
+        // Contexto litúrgico para Missas e Eventos Católicos
+        public string? MomentoLiturgico { get; set; } // Ex: "Entrada", "Ato Penitencial", "Salmo", "Ofertório", "Comunhão", etc.
     }
 }

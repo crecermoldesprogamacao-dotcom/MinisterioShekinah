@@ -15,7 +15,6 @@
             </a>
         </div>
     </div>
-
     <!-- Barra de Ferramentas Estilo Cifra Club / Banda Restauração -->
     <div class="card bg-dark border-warning mb-4 shadow-lg sticky-top" style="top: 80px; z-index: 1000;">
         <div class="card-body py-3 px-3 d-flex flex-wrap align-items-center justify-content-between gap-3 text-light">
@@ -31,7 +30,6 @@
                 <button type="button" class="btn btn-link text-warning p-0 text-decoration-none small fw-bold" id="btnTomReset">Restaurar</button>
                 <input type="hidden" id="tomOriginal" value="@Model.TomOriginal" />
             </div>
-
             <!-- Controlo de Capotraste -->
             <div class="d-flex align-items-center gap-2">
                 <label for="capoSelect" class="fw-bold text-warning mb-0 small">Capotraste:</label>
@@ -43,7 +41,6 @@
                     }
                 </select>
             </div>
-
             <!-- Controlo de Texto / Zoom -->
             <div class="d-flex align-items-center gap-2">
                 <span class="fw-bold text-warning">Texto:</span>
@@ -52,7 +49,6 @@
                     <button type="button" class="btn btn-outline-warning text-light fw-bold" id="btnFonteMais" title="Aumentar Letra">A+</button>
                 </div>
             </div>
-
             <!-- Rolagem Automática -->
             <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-3" id="btnPlayRolagem">
@@ -62,7 +58,6 @@
                 <span id="velocidadeIndicador" class="badge bg-warning text-dark fw-bold">1x</span>
                 <button type="button" class="btn btn-outline-warning text-light btn-sm px-2 py-0 fw-bold" id="btnVelocidadeMais">+</button>
             </div>
-
             <!-- Ações: Impressão -->
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold" onclick="window.print()">
@@ -71,12 +66,10 @@
             </div>
         </div>
     </div>
-
-    <!-- Bloco da Cifra Dinâmica -->
+    <!-- Bloco da Cifra Dinâmica com Arial 14 e Negrito nos Acordes -->
     <div class="card bg-dark border-secondary shadow-lg rounded-4 p-4 mb-4">
-        <pre id="cifraConteudo" class="font-monospace text-light m-0" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.7;">@Model.Cifra</pre>
+        <pre id="cifraConteudo" class="text-light m-0 cifra-fonte-custom" style="white-space: pre-wrap;">@Model.Cifra</pre>
     </div>
-
     <!-- Botão de Excluir / Apagar Cifra -->
     <div class="d-flex justify-content-end mb-5">
         <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger fw-bold px-4 py-2 rounded-pill shadow-sm">
@@ -84,15 +77,24 @@
         </a>
     </div>
 </div>
-
 @section Scripts {
-    <!-- O ?v=4 força o browser a carregar a nova versão do script sem cache -->
-    <script src="~/js/cifra-tools.js?v=4"></script>
+    <script src="~/js/cifra-tools.js?v=5"></script>
 }
-
 <style>
     body {
         background-color: #121212;
         color: #f8f9fa;
     }
+
+    .cifra-fonte-custom {
+        font-family: Arial, sans-serif !important;
+        font-size: 14pt !important;
+        line-height: 1.6 !important;
+        white-space: pre-wrap;
+    }
+        /* Força o negrito e a cor amarela/dourada ou cor de destaque nos acordes */
+        .cifra-fonte-custom .acorde-negrito, pre .acorde-negrito {
+            font-weight: bold !important;
+            color: #dfb235 !important;
+        }
 </style>

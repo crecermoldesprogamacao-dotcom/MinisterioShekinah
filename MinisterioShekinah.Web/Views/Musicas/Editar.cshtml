@@ -1,0 +1,89 @@
+﻿@model MinisterioShekinah.Web.Models.Musica
+@{
+    ViewData["Title"] = "Editar Música";
+}
+<div class="container my-5" style="max-width: 800px;">
+    <div class="card bg-dark border-warning shadow-lg p-4 rounded-4">
+        <div class="card-body">
+            <h2 class="text-warning fw-bold mb-3 text-center"><i class="bi bi-pencil-square"></i> Editar Música</h2>
+            <p class="text-light text-center opacity-75 mb-4">Atualize os dados, a cifra ou o momento litúrgico da canção.</p>
+            
+            <form asp-action="Editar">
+                <input type="hidden" asp-for="Id" />
+                
+                <div class="mb-3">
+                    <label asp-for="Titulo" class="form-label text-warning fw-bold">Título da Música</label>
+                    <input asp-for="Titulo" class="form-control bg-black text-light border-secondary" required />
+                    <span asp-validation-for="Titulo" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Artista" class="form-label text-warning fw-bold">Artista / Ministério</label>
+                        <input asp-for="Artista" class="form-control bg-black text-light border-secondary" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="TomOriginal" class="form-label text-warning fw-bold">Tom Original</label>
+                        <input asp-for="TomOriginal" class="form-control bg-black text-light border-secondary" required />
+                        <span asp-validation-for="TomOriginal" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Capotraste" class="form-label text-warning fw-bold">Capotraste</label>
+                        <input asp-for="Capotraste" type="number" min="0" max="12" class="form-control bg-black text-light border-secondary" />
+                    </div>
+                </div>
+
+                <!-- Campo do Momento Litúrgico na Edição -->
+                <div class="mb-3">
+                    <label asp-for="MomentoLiturgico" class="form-label text-warning fw-bold">Momento Litúrgico / Canto</label>
+                    <select asp-for="MomentoLiturgico" class="form-select bg-black text-light border-secondary">
+                        <option value="">Selecione o momento da Missa (Opcional)...</option>
+                        <option value="Entrada">Entrada</option>
+                        <option value="Ato Penitencial">Ato Penitencial</option>
+                        <option value="Hino de Louvor (Glória)">Hino de Louvor (Glória)</option>
+                        <option value="Salmo Responsorial">Salmo Responsorial</option>
+                        <option value="Aclamação ao Evangelho">Aclamação ao Evangelho (Aleluia)</option>
+                        <option value="Ofertório">Ofertório</option>
+                        <option value="Santo">Santo</option>
+                        <option value="Cordeiro de Deus">Cordeiro de Deus</option>
+                        <option value="Comunhão">Comunhão</option>
+                        <option value="Pós-Comunhão">Pós-Comunhão / Ação de Graças</option>
+                        <option value="Final / Envio">Final / Envio</option>
+                        <option value="Adoração / Louvor Geral">Adoração / Louvor Geral</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Cifra" class="form-label text-warning fw-bold">Cifra com Acordes entre Colchetes</label>
+                    <textarea asp-for="Cifra" rows="10" class="form-control bg-black text-light border-secondary font-monospace" required></textarea>
+                    <small class="text-muted">Dica: Coloque os acordes entre parênteses rectos (ex: `[G]`, `[D/F#]`) para transposição automática.</small>
+                    <span asp-validation-for="Cifra" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="PartituraUrl" class="form-label text-warning fw-bold">Link da Partitura (Opcional)</label>
+                    <input asp-for="PartituraUrl" class="form-control bg-black text-light border-secondary" />
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light">Voltar ao Repertório</a>
+                    <button type="submit" class="btn btn-warning text-dark fw-bold px-4">Guardar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #000;
+        color: #fff;
+        border-color: #dfb235;
+        box-shadow: 0 0 0 0.25rem rgba(223, 178, 53, 0.25);
+    }
+</style>

@@ -1,0 +1,60 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.Musica>
+@{
+    ViewData["Title"] = "Gerar Repertório para a Santa Missa";
+}
+
+<div class="container my-4" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-warning fw-bold mb-1">🕊️ Repertório da Santa Missa / Evento</h1>
+            <p class="text-light opacity-75 m-0">Selecione as músicas na ordem da celebração para gerar o PDF unificado.</p>
+        </div>
+        <a asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold">Voltar</a>
+    </div>
+
+    <form asp-action="ExportarPdfMissa" method="post">
+        <div class="card bg-dark border-warning shadow-lg p-4 mb-4">
+            <div class="mb-3">
+                <label class="form-label text-warning fw-bold">Nome da Celebração / Evento:</label>
+                <input type="text" name="NomeEvento" class="form-control bg-black text-light border-warning" placeholder="Ex: Santa Missa de Domingo - 19h" required />
+            </div>
+
+            <hr class="border-secondary my-4" />
+
+            <h5 class="text-warning mb-3">Selecione as músicas do repertório:</h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;" class="text-center">Selecionar</th>
+                            <th>Momento</th>
+                            <th>Título da Música</th>
+                            <th>Tom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var musica in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" name="musicasIds" value="@musica.Id" class="form-check-input border-warning" />
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@(string.IsNullOrEmpty(musica.MomentoLiturgico) ? "Geral" : musica.MomentoLiturgico)</span>
+                                </td>
+                                <td class="fw-bold text-light">@musica.Titulo</td>
+                                <td class="text-warning">@musica.TomOriginal</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mb-5">
+            <button type="submit" class="btn btn-warning text-dark fw-bold px-4 py-2 shadow-lg">
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i> Gerar PDF da Santa Missa
+            </button>
+        </div>
+    </form>
+</div>

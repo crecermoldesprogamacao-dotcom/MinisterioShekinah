@@ -26,7 +26,6 @@ namespace MinisterioShekinah.Web.Controllers
         // GET: Musicas/ModoMusico
         public async Task<IActionResult> ModoMusico()
         {
-            // Ordenado alfabeticamente pelo título
             var musicas = await _context.Musicas
                 .OrderBy(m => m.Titulo)
                 .ToListAsync();
@@ -42,7 +41,7 @@ namespace MinisterioShekinah.Web.Controllers
         // POST: Musicas/Criar
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Criar([Bind("Titulo,Artista,TomOriginal,Capotraste,Cifra,PartituraUrl")] Musica musica)
+        public async Task<IActionResult> Criar([Bind("Titulo,Artista,TomOriginal,Capotraste,Cifra,PartituraUrl,MomentoLiturgico")] Musica musica)
         {
             if (ModelState.IsValid)
             {
@@ -65,10 +64,9 @@ namespace MinisterioShekinah.Web.Controllers
         // POST: Musicas/Editar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id, [Bind("Id,Titulo,Artista,TomOriginal,Capotraste,Cifra,PartituraUrl")] Musica musica)
+        public async Task<IActionResult> Editar(int id, [Bind("Id,Titulo,Artista,TomOriginal,Capotraste,Cifra,PartituraUrl,MomentoLiturgico")] Musica musica)
         {
             if (id != musica.Id) return NotFound();
-
             if (ModelState.IsValid)
             {
                 try
@@ -89,18 +87,9 @@ namespace MinisterioShekinah.Web.Controllers
         // GET: Musicas/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var musica = await _context.Musicas
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (musica == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var musica = await _context.Musicas.FirstOrDefaultAsync(m => m.Id == id);
+            if (musica == null) return NotFound();
             return View(musica);
         }
 
@@ -115,8 +104,38 @@ namespace MinisterioShekinah.Web.Controllers
                 _context.Musicas.Remove(musica);
                 await _context.SaveChangesAsync();
             }
-            // Redireciona de volta para o repertório após apagar
             return RedirectToAction("Repertorio", "Home");
+        }
+
+        // GET: Musicas/SelecionarMissal
+        public async Task<IActionResult> SelecionarMissal()
+        {
+            var musicas = await _context.Musicas.OrderBy(m => m.Titulo).ToListAsync();
+            return View(musicas);
+        }
+
+        // POST: Musicas/ExportarPdfMissa
+        [HttpPost]
+        public async Task<IActionResult> ExportarPdfMissa(string nomeEvento, List<int> musicasIds)
+        {
+            if (musicasIds == null || !musicasIds.Any())
+            {
+                ModelState.AddModelError(string.Empty, "Selecione pelo menos uma música para a Missa ou Evento.");
+                var musicasLista = await _context.Musicas.OrderBy(m => m.Titulo).ToListAsync();
+                return View("SelecionarMissal", musicasLista);
+            }
+
+            var musicasSelecionadas = await _context.Musicas
+                .Where(m => musicasIds.Contains(m.Id))
+                .ToListAsync();
+
+            var viewModel = new
+            {
+                NomeEvento = string.IsNullOrEmpty(nomeEvento) ? "Santa Missa / Celebração" : nomeEvento,
+                Musicas = musicasSelecionadas
+            };
+
+            return View("PdfMissaTemplate", viewModel);
         }
     }
 }

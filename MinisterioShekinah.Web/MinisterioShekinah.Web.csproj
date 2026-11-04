@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Eventos\GerarMissal.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Dockerfile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Musicas\GerarMissal.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

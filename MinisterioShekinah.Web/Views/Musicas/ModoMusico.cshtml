@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Modo Músico / Altar - Ministério Shekinah";
 }
-
 <div class="container my-4" style="max-width: 900px;">
     <!-- Cabeçalho Fixo do Modo Altar com Controlo de Rolagem -->
     <div class="card bg-dark border-warning shadow-lg rounded-4 p-3 mb-4 sticky-top" style="top: 85px; z-index: 1000;">
@@ -24,12 +23,10 @@
             </div>
         </div>
     </div>
-
     <!-- Mensagem de Aviso caso o filtro esteja ativo -->
     <div id="avisoFiltro" class="alert alert-warning bg-dark text-warning border-warning mb-4 d-none">
         <i class="bi bi-info-circle-fill me-2"></i> A exibir apenas as músicas selecionadas para a Missa. <a asp-controller="Home" asp-action="Repertorio" class="alert-link text-light underline">Alterar seleção no Repertório</a>.
     </div>
-
     <!-- Lista Contínua de Músicas -->
     @if (Model != null && Model.Any())
     {
@@ -44,7 +41,7 @@
                     <span class="badge bg-warning text-dark fw-bold px-3 py-2">Tom: @musica.TomOriginal?.ToUpper()</span>
                 </div>
                 <div class="card-body bg-dark text-light p-4">
-                    <pre class="font-monospace text-light m-0" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.7;">@musica.Cifra</pre>
+                    <pre class="text-light m-0 cifra-estilo-shekinah" id="cifra-altar-@musica.Id">@musica.Cifra</pre>
                 </div>
             </div>
         }
@@ -59,8 +56,28 @@
 
 @section Scripts {
     <script src="~/js/modo-musico-filtro.js?v=2"></script>
-    <script src="~/js/cifra-tools.js?v=2"></script>
+    <script src="~/js/cifra-tools.js?v=5"></script>
     <script src="~/js/modo-musico.js?v=2"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".cifra-estilo-shekinah").forEach(el => {
+                let texto = el.innerText;
+                let linhas = texto.split('\n');
+                let linhasProcessadas = linhas.map(linha => {
+                    return linha.split(/(\s+)/).map(token => {
+                        let t = token.trim();
+                        // Identifica acordes (com ou sem colchetes) e aplica a classe de negrito/cor
+                        if (t.length > 0 && t.length <= 8 && /^(?:\[)?[A-G][b#]?(?:m|maj|min|dim|aug|sus|add|\+|\-|°|0|[0-9#bM])*(?:\/[A-G][b#]?)?(?:\])?$/.test(t)) {
+                            let limpo = t.replace(/[\[\]]/g, '');
+                            return `<b class="acorde-negrito">${limpo}</b>`;
+                        }
+                        return token;
+                    }).join('');
+                });
+                el.innerHTML = linhasProcessadas.join('\n');
+            });
+        });
+    </script>
 }
 
 <style>
@@ -68,4 +85,16 @@
         background-color: #0b0b0d;
         color: #f8f9fa;
     }
+
+    .cifra-estilo-shekinah {
+        font-family: Arial, sans-serif !important;
+        font-size: 14pt !important;
+        line-height: 1.6 !important;
+        white-space: pre-wrap !important;
+    }
+
+        .cifra-estilo-shekinah .acorde-negrito {
+            font-weight: bold !important;
+            color: #dfb235 !important;
+        }
 </style>

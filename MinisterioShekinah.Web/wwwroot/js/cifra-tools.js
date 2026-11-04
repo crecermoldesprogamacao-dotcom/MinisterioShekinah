@@ -15,7 +15,10 @@
         const cifraElement = document.getElementById("cifraConteudo");
         const capoSelect = document.getElementById("capoSelect");
         if (cifraElement && cifraElement.innerText.trim() !== "") {
-            cifraOriginalTexto = cifraElement.innerText;
+            // Guarda o texto limpo original sem tags HTML prévias
+            if (!cifraOriginalTexto) {
+                cifraOriginalTexto = cifraElement.innerText;
+            }
             capotrasteAtual = parseInt(capoSelect ? capoSelect.value : "0");
             atualizarCifra();
         } else {
@@ -28,7 +31,6 @@
         document.getElementById("btnTomMenos")?.addEventListener("click", () => mudarTom(-1));
         document.getElementById("btnTomMais")?.addEventListener("click", () => mudarTom(1));
         document.getElementById("btnTomReset")?.addEventListener("click", () => resetarTom());
-
         const capoSelect = document.getElementById("capoSelect");
         if (capoSelect) {
             capoSelect.addEventListener("change", function () {
@@ -36,7 +38,6 @@
                 atualizarCifra();
             });
         }
-
         document.getElementById("btnFonteMenos")?.addEventListener("click", () => alterarFonte(-1));
         document.getElementById("btnFonteMais")?.addEventListener("click", () => alterarFonte(1));
         document.getElementById("btnPlayRolagem")?.addEventListener("click", () => toggleRolagem());
@@ -107,35 +108,43 @@
 
     function atualizarCifra() {
         const cifraElement = document.getElementById("cifraConteudo");
-        if (!cifraElement || !cifraOriginalTexto) return;
+        if (!cifraElement) return;
+        if (!cifraOriginalTexto) {
+            cifraOriginalTexto = cifraElement.innerText;
+        }
 
-        // 1. Os acordes na tela mudam APENAS com os botões de tom (forma que o músico toca)
         let linhas = cifraOriginalTexto.split('\n');
         let linhasProcessadas = linhas.map(linha => {
-            return linha.split(/(\s+)/).map(token => {
+            // Divide a linha preservando os espaços em branco para manter a tabulação dos acordes
+            let tokens = linha.split(/(\s+)/);
+            return tokens.map(token => {
                 if (!token.trim()) return token;
+
                 let tokenLimpo = token.startsWith('[') && token.endsWith(']') ? token.substring(1, token.length - 1) : token;
+
                 if (token.startsWith('[') && token.endsWith(']')) {
-                    return transporAcorde(token, semitonesAtuais);
+                    let transposto = transporAcorde(token, semitonesAtuais);
+                    return `<b class="acorde-negrito">${transposto}</b>`;
                 }
+
+                // Se a cifra veio do Word sem colchetes mas é um acorde válido, destaca em negrito também!
                 if (ehAcordeValido(tokenLimpo)) {
-                    return transporAcorde(token, semitonesAtuais);
+                    let transposto = transporAcorde(token, semitonesAtuais);
+                    return `<b class="acorde-negrito">${transposto}</b>`;
                 }
+
                 return token;
             }).join('');
         });
-        cifraElement.innerText = linhasProcessadas.join('\n');
 
-        // 2. O tom exibido no cabeçalho considera o tom + o efeito do capotraste
+        cifraElement.innerHTML = linhasProcessadas.join('\n');
+
         const exibeTom = document.getElementById("tomAtualExibicao");
         const tomOriginalInput = document.getElementById("tomOriginal");
         let tomOriginal = (tomOriginalInput && tomOriginalInput.value) ? tomOriginalInput.value : "C";
-
         if (exibeTom) {
             let deslocamentoTotalParaTomReal = semitonesAtuais + capotrasteAtual;
             let tomCalculado = transporAcorde(tomOriginal.trim(), deslocamentoTotalParaTomReal);
-
-            // Se houver capotraste ativo, mostra o tom real e a forma utilizada
             if (capotrasteAtual > 0) {
                 let formaAtual = transporAcorde(tomOriginal.trim(), semitonesAtuais);
                 exibeTom.innerText = `${tomCalculado.toUpperCase()} (com forma de ${formaAtual.toUpperCase()})`;
