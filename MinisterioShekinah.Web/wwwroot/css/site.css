@@ -1,0 +1,141 @@
+/* Palette & Variables */
+:root {
+    --bg-dark: #0d0d0e;
+    --bg-card: #161619;
+    --gold-primary: #d4af37;
+    --gold-gradient: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #aa7c11 100%);
+    --gold-glow: rgba(212, 175, 55, 0.25);
+    --text-light: #f8f9fa;
+    --text-muted: #a0a0a5;
+    --border-color: rgba(212, 175, 55, 0.2);
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: 'Montserrat', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Gold Text Accent */
+.text-gold {
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* Navbar */
+.navbar-custom {
+    background-color: rgba(13, 13, 14, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand img {
+    height: 55px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.nav-link {
+    color: var(--text-light) !important;
+    transition: color 0.3s ease;
+}
+
+    .nav-link:hover {
+        color: var(--gold-primary) !important;
+    }
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    padding: 120px 0 80px;
+    background: radial-gradient(circle at center, rgba(212, 175, 55, 0.12) 0%, rgba(13, 13, 14, 1) 70%);
+}
+
+.hero-logo {
+    max-width: 320px;
+    filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.4));
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Buttons */
+.btn-gold {
+    background: var(--gold-gradient);
+    color: #000;
+    font-weight: 700;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px var(--gold-glow);
+    transition: all 0.3s ease;
+}
+
+    .btn-gold:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        color: #000;
+    }
+
+.btn-outline-gold {
+    border: 2px solid var(--gold-primary);
+    color: var(--gold-primary);
+    border-radius: 30px;
+    padding: 10px 26px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-gold:hover {
+        background: var(--gold-gradient);
+        color: #000;
+    }
+
+/* Cards (Louvores, Agenda, Projetos) */
+.custom-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .custom-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px var(--gold-glow);
+        border-color: var(--gold-primary);
+    }
+
+/* Interactive Tabs for Music/Chords */
+.nav-pills .nav-link.active {
+    background: var(--gold-gradient) !important;
+    color: #000 !important;
+    font-weight: bold;
+}
+
+.nav-pills .nav-link {
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    margin-right: 8px;
+}
+
+/* Chords Box */
+.cifra-box {
+    background-color: #050505;
+    border-left: 4px solid var(--gold-primary);
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    color: #4da6ff;
+    white-space: pre-wrap;
+}

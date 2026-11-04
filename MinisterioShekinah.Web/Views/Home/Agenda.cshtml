@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Agenda & Escalas - Ministério Shekinah";
+}
+
+<div class="container my-5" style="max-width: 900px;">
+    <!-- Cabeçalho da Página -->
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-2">AGENDA LITÚRGICA</span>
+        <h1 class="text-warning fw-bold display-5">Próximos Compromissos & Ensaios</h1>
+        <p class="text-light opacity-75">Acompanhe as nossas escalas para a Santa Missa, ensaios semanais e momentos de adoração em Valinhos/SP.</p>
+    </div>
+
+    <!-- Blocos da Agenda -->
+    <div class="row g-4">
+        <!-- Evento 1 -->
+        <div class="col-md-6">
+            <div class="card bg-dark border-warning shadow-lg rounded-4 h-100 p-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-1">Ensaio Geral</span>
+                        <span class="text-warning fw-semibold small"><i class="bi bi-calendar-event me-1"></i> Quintas-feiras</span>
+                    </div>
+                    <h3 class="text-white fw-bold mb-2">Ensaio do Ministério</h3>
+                    <p class="text-light opacity-75 small mb-3">
+                        <i class="bi bi-geo-alt-fill text-warning me-1"></i> Sala de Ensaio / Igreja Matriz - Valinhos/SP
+                    </p>
+                    <p class="text-light small">Alinhamento de repertório, estudo de novas cifras e preparação espiritual para a Santa Missa.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 2 -->
+        <div class="col-md-6">
+            <div class="card bg-dark border-warning shadow-lg rounded-4 h-100 p-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-1">Santa Missa</span>
+                        <span class="text-warning fw-semibold small"><i class="bi bi-calendar-event me-1"></i> Domingos</span>
+                    </div>
+                    <h3 class="text-white fw-bold mb-2">Missa Dominical</h3>
+                    <p class="text-light opacity-75 small mb-3">
+                        <i class="bi bi-geo-alt-fill text-warning me-1"></i> Igreja Principal - Valinhos/SP
+                    </p>
+                    <p class="text-light small">Serviço de louvor e adoração na Santa Missa com o repertório oficial do ministério.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botão de Novo Evento (Admin) -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <span class="text-light opacity-75">Visualize as próximas escalas e compromissos.</span>
+    <a href="/Admin/CriarEvento" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">
+        <i class="bi bi-plus-circle-fill me-2"></i> Adicionar Evento
+    </a>
+</div>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+
+    .text-warning {
+        color: #dfb235 !important;
+    }
+
+    .border-warning {
+        border-color: #dfb235 !important;
+    }
+
+    .bg-warning {
+        background-color: #dfb235 !important;
+    }
+</style>

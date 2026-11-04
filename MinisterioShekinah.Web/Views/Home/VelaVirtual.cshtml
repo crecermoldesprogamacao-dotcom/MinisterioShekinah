@@ -1,0 +1,409 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.VelaVirtual>
+@{
+    ViewData["Title"] = "Vela Virtual - Ministério Shekinah";
+}
+
+<div class="container my-5 pb-5" style="max-width: 1000px;">
+    <!-- Cabeçalho -->
+    <div class="text-center mb-5">
+        <div class="display-3 text-warning mb-2 animate-pulse">
+            <i class="bi bi-fire"></i>
+        </div>
+        <h1 class="text-warning fw-bold">Velas Virtuais - Ministério Shekinah</h1>
+        <p class="text-light opacity-75">"Acenda com fé a sua vela virtual e faça o seu pedido de oração."</p>
+    </div>
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-warning bg-dark text-warning border-warning text-center fw-bold p-3 rounded-4 shadow mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Sucesso"]
+        </div>
+    }
+
+    <!-- Formulário Interativo com Estilo de Velas de Santuário Moderno -->
+    <div class="card bg-dark border-warning shadow-lg rounded-4 p-4 mb-5">
+        <h3 class="text-warning fw-bold mb-4 text-center"><i class="bi bi-heart-fill me-2 text-danger"></i> Escolha a sua Vela e Faça o seu Pedido</h3>
+        
+        <form asp-action="AcenderVela" method="post" id="formVela">
+            <input type="hidden" id="corVelaSelecionada" name="CorVela" value="branco" />
+            
+            <!-- Seleção Visual Estilo Santuário -->
+            <div class="row text-center mb-4 g-3 justify-content-center">
+                <!-- Vela Branca -->
+                <div class="col-6 col-md-2">
+                    <div class="opcao-vela p-3 rounded border border-secondary selected-vela text-center h-100 d-flex flex-column align-items-center justify-content-between" data-cor="branco" style="cursor: pointer;">
+                        <div class="vela-santuario-container mx-auto">
+                            <div class="chama-santuario" style="bottom: 95px;"></div>
+                            <div class="corpo-vela vela-estilo-branco" style="height: 75px;"></div>
+                            <div class="castical"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="d-block small text-warning fw-bold">VELA BRANCA</span>
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Saúde Física.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vela Verde -->
+                <div class="col-6 col-md-2">
+                    <div class="opcao-vela p-3 rounded border border-secondary text-center h-100 d-flex flex-column align-items-center justify-content-between" data-cor="verde" style="cursor: pointer;">
+                        <div class="vela-santuario-container mx-auto">
+                            <div class="chama-santuario" style="bottom: 95px;"></div>
+                            <div class="corpo-vela vela-estilo-verde" style="height: 75px;"></div>
+                            <div class="castical"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="d-block small text-success fw-bold">VELA VERDE</span>
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Saúde Emocional.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vela Laranja -->
+                <div class="col-6 col-md-2">
+                    <div class="opcao-vela p-3 rounded border border-secondary text-center h-100 d-flex flex-column align-items-center justify-content-between" data-cor="laranja" style="cursor: pointer;">
+                        <div class="vela-santuario-container mx-auto">
+                            <div class="chama-santuario" style="bottom: 95px;"></div>
+                            <div class="corpo-vela vela-estilo-laranja" style="height: 75px;"></div>
+                            <div class="castical"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="d-block small text-warning fw-bold">VELA LARANJA</span>
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Vitória pelo Sangue.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vela Vermelha -->
+                <div class="col-6 col-md-2">
+                    <div class="opcao-vela p-3 rounded border border-secondary text-center h-100 d-flex flex-column align-items-center justify-content-between" data-cor="vermelho" style="cursor: pointer;">
+                        <div class="vela-santuario-container mx-auto">
+                            <div class="chama-santuario" style="bottom: 95px;"></div>
+                            <div class="corpo-vela vela-estilo-vermelho" style="height: 75px;"></div>
+                            <div class="castical"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="d-block small text-danger fw-bold">VELA VERMELHA</span>
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Saúde Psicológica.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vela Roxa -->
+                <div class="col-6 col-md-2">
+                    <div class="opcao-vela p-3 rounded border border-secondary text-center h-100 d-flex flex-column align-items-center justify-content-between" data-cor="roxo" style="cursor: pointer;">
+                        <div class="vela-santuario-container mx-auto">
+                            <div class="chama-santuario" style="bottom: 95px;"></div>
+                            <div class="corpo-vela vela-estilo-roxo" style="height: 75px;"></div>
+                            <div class="castical"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="d-block small text-info fw-bold">VELA ROXA</span>
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Proteção Divina.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-warning fw-bold">O seu Nome:</label>
+                <input type="text" name="NomeFiel" class="form-control bg-black text-light border-warning shadow-sm" placeholder="Ex: Maria Silva" required autocomplete="off" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-warning fw-bold">Intenção / Pedido de Oração:</label>
+                <textarea name="Intencao" class="form-control bg-black text-light border-warning shadow-sm" rows="3" placeholder="Escreva aqui a sua intenção..." required></textarea>
+            </div>
+
+            <div class="text-center pt-2">
+                <button type="submit" class="btn btn-warning text-dark fw-bold px-5 py-3 rounded-pill shadow-lg fs-5 btn-acender">
+                    <i class="bi bi-fire me-2"></i> Acender Vela Virtual
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Mural de Velas Acesas -->
+    <h2 class="text-warning fw-bold mb-4 text-center"><i class="bi bi-list-stars me-2"></i> Velas Acesas Recentemente</h2>
+    
+    <div class="row row-cols-1 row-cols-md-2 g-4" id="muralVelas">
+        @if (Model != null && Model.Any())
+        {
+            var agora = DateTime.Now;
+            var totalSegundos7Dias = TimeSpan.FromDays(7).TotalSeconds;
+
+            foreach (var vela in Model)
+            {
+                var segundosPassados = (agora - vela.DataAcesa).TotalSeconds;
+                var proporcaoRestante = Math.Max(0.1, 1.0 - (segundosPassados / totalSegundos7Dias));
+
+                int alturaVelaPx = (int)Math.Round(75 * proporcaoRestante);
+                int posicaoChamaBottom = alturaVelaPx + 20; // 20px do castiçal + altura da cera
+                double escalaChama = 0.6 + (0.4 * proporcaoRestante);
+
+                string classeCorVela = vela.CorVela switch
+                {
+                    "verde" => "vela-estilo-verde",
+                    "laranja" => "vela-estilo-laranja",
+                    "vermelho" => "vela-estilo-vermelho",
+                    "roxo" => "vela-estilo-roxo",
+                    _ => "vela-estilo-branco"
+                };
+
+                <div class="col">
+                    <div class="card h-100 shadow rounded-4 p-3 border-warning-hover">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-center flex-shrink-0" style="width: 50px;">
+                                <div class="vela-santuario-container mx-auto" style="transform: scale(0.65); transform-origin: bottom center; height: 105px;">
+                                    <div class="chama-santuario" style="bottom: @(posicaoChamaBottom)px; transform: translateX(-50%) scale(@escalaChama.ToString(System.Globalization.CultureInfo.InvariantCulture));"></div>
+                                    <div class="corpo-vela @classeCorVela" style="height: @(alturaVelaPx)px;"></div>
+                                    <div class="castical"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="text-warning fw-bold mb-1">@vela.NomeFiel</h5>
+                                <p class="text-light small mb-2 opacity-75">@vela.Intencao</p>
+                                <span class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i> @vela.DataAcesa.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-4" id="mensagemSemVelas">
+                <p class="text-muted">Ainda não há velas acesas. Seja o primeiro a acender uma vela hoje!</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var opcoesVela = document.querySelectorAll(".opcao-vela");
+        var inputCor = document.getElementById("corVelaSelecionada");
+
+        for (var i = 0; i < opcoesVela.length; i++) {
+            (function (item) {
+                item.addEventListener("click", function () {
+                    for (var j = 0; j < opcoesVela.length; j++) {
+                        opcoesVela[j].classList.remove("border-warning", "selected-vela");
+                        opcoesVela[j].classList.add("border-secondary");
+                    }
+                    
+                    item.classList.remove("border-secondary");
+                    item.classList.add("border-warning", "selected-vela");
+                    
+                    if (inputCor) {
+                        inputCor.setAttribute('value', item.getAttribute("data-cor") || "branco");
+                    }
+                });
+            })(opcoesVela[i]);
+        }
+
+        const sig = window.signalR;
+        if (sig) {
+            const connection = new sig.HubConnectionBuilder()
+                .withUrl("/velaHub")
+                .build();
+
+            connection.on("ReceberNovaVela", function (vela) {
+                const mural = document.getElementById("muralVelas");
+                const mensagemSemVelas = document.getElementById("mensagemSemVelas");
+
+                if (mensagemSemVelas) {
+                    mensagemSemVelas.remove();
+                }
+
+                let classeCorVela = "vela-estilo-branco";
+                switch (vela.corVela) {
+                    case "verde": classeCorVela = "vela-estilo-verde"; break;
+                    case "laranja": classeCorVela = "vela-estilo-laranja"; break;
+                    case "vermelho": classeCorVela = "vela-estilo-vermelho"; break;
+                    case "roxo": classeCorVela = "vela-estilo-roxo"; break;
+                }
+
+                const alturaPx = vela.alturaPx || 75;
+                const posicaoChamaBottom = alturaPx + 20;
+                const escalaChama = vela.escalaChama || 1.0;
+
+                if (mural) {
+                    const novaVelaDiv = document.createElement("div");
+                    novaVelaDiv.className = "col animate-fade-in";
+                    
+                    novaVelaDiv.innerHTML = `
+                            <div class="card h-100 shadow rounded-4 p-3 border-warning-hover">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-center flex-shrink-0" style="width: 50px;">
+                                        <div class="vela-santuario-container mx-auto" style="transform: scale(0.65); transform-origin: bottom center; height: 105px;">
+                                            <div class="chama-santuario" style="bottom: ${posicaoChamaBottom}px; transform: translateX(-50%) scale(${escalaChama});"></div>
+                                            <div class="corpo-vela ${classeCorVela}" style="height: ${alturaPx}px;"></div>
+                                            <div class="castical"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-warning fw-bold mb-1">${vela.nomeFiel}</h5>
+                                        <p class="text-light small mb-2 opacity-75">${vela.intencao}</p>
+                                        <span class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i> ${vela.dataAcesa}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                    mural.prepend(novaVelaDiv);
+                }
+            });
+
+            connection.start().catch(function (err) {
+                console.error("Erro na conexão do SignalR:", err.toString());
+            });
+        }
+    });
+</script>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+
+    .card {
+        background: rgba(24, 24, 24, 0.85) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(223, 178, 53, 0.2) !important;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .border-warning-hover:hover {
+        border-color: rgba(223, 178, 53, 0.8) !important;
+        box-shadow: 0 10px 30px rgba(223, 178, 53, 0.2) !important;
+        transform: translateY(-3px);
+    }
+
+    .opcao-vela {
+        background: #181818 !important;
+        transition: all 0.2s ease;
+    }
+
+        .opcao-vela:hover {
+            border-color: rgba(223, 178, 53, 0.5) !important;
+        }
+
+    .selected-vela {
+        background: linear-gradient(135deg, #252525 0%, #151515 100%) !important;
+        box-shadow: 0 0 20px rgba(223, 178, 53, 0.35);
+        border-color: #dfb235 !important;
+    }
+
+    .btn-acender {
+        transition: all 0.3s ease;
+    }
+
+        .btn-acender:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 25px rgba(223, 178, 53, 0.5) !important;
+        }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-in-out;
+    }
+
+    /* Estrutura da Vela Dinâmica */
+    .vela-santuario-container {
+        position: relative;
+        width: 38px;
+        height: 105px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .corpo-vela {
+        width: 34px;
+        border-radius: 4px 4px 0 0;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.85), 0 0 8px rgba(255,255,255,0.15);
+        position: relative;
+        transition: height 0.5s ease;
+    }
+
+    /* Gradientes das Cores das Velas */
+    .vela-estilo-branco {
+        background: linear-gradient(to right, #a5a5a5, #ffffff, #a5a5a5);
+    }
+
+    .vela-estilo-verde {
+        background: linear-gradient(to right, #153b2e, #2e7d32, #153b2e);
+    }
+
+    .vela-estilo-laranja {
+        background: linear-gradient(to right, #9a5b00, #ffa726, #9a5b00);
+    }
+
+    .vela-estilo-vermelho {
+        background: linear-gradient(to right, #591616, #c62828, #591616);
+    }
+
+    .vela-estilo-roxo {
+        background: linear-gradient(to right, #380f6d, #7b1fa2, #380f6d);
+    }
+
+    /* Base do Castiçal */
+    .castical {
+        width: 44px;
+        height: 20px;
+        background: radial-gradient(circle, #fbc02d 10%, #d4af37 50%, #856404 90%);
+        border-radius: 0 0 6px 6px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+        position: relative;
+        flex-shrink: 0;
+    }
+
+        .castical::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 2px;
+            width: 40px;
+            height: 5px;
+            background: #4a3328;
+            border-radius: 2px;
+        }
+
+    /* Chama Realista perfeitamente posicionada no topo da cera */
+    .chama-santuario {
+        width: 12px;
+        height: 18px;
+        background: radial-gradient(circle, #ffffff 10%, #ffeb3b 40%, #ff5722 80%, rgba(255,87,34,0) 100%);
+        border-radius: 50% 50% 20% 20%;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 0 12px #ff9800, 0 0 25px #ff5722, 0 0 40px rgba(255, 152, 0, 0.4);
+        animation: piscarChamaModerno 1.6s infinite alternate ease-in-out;
+        z-index: 2;
+    }
+
+    @@keyframes piscarChamaModerno {
+        0% {
+            opacity: 0.8;
+            filter: brightness(1);
+        }
+
+        100% {
+            opacity: 1;
+            filter: brightness(1.3);
+            box-shadow: 0 0 16px #ff9800, 0 0 30px #ff5722, 0 0 50px rgba(255, 152, 0, 0.6);
+        }
+    }
+</style> 

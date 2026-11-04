@@ -1,0 +1,92 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.MembroEquipe>
+
+@{
+    ViewData["Title"] = "Sobre Nós - Ministério Shekinah";
+    var sobre = ViewBag.Sobre as MinisterioShekinah.Web.Models.SobreMinisterio;
+}
+
+<div class="container my-5" style="max-width: 1100px;">
+    <!-- Cabeçalho Institucional -->
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-2">QUEM SOMOS</span>
+        <h1 class="text-warning fw-bold display-5">Ministério Shekinah</h1>
+        <p class="text-light opacity-75 lead mt-2">Louvor, adoração e evangelização em Valinhos/SP.</p>
+
+        @if (Context.Session.GetString("AdminLogado") == "True")
+        {
+            <div class="mt-3">
+                <a href="/Sobre/Gerir" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">
+                    <i class="bi bi-gear-fill me-2"></i> Gerir Página (Admin)
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Nossa História & Missão (Dinâmico) -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card bg-dark border-warning shadow-lg rounded-4 p-4 h-100">
+                <div class="card-body">
+                    <h3 class="text-warning fw-bold mb-3"><i class="bi bi-book-fill me-2"></i> @sobre?.TituloHistoria</h3>
+                    <p class="text-light opacity-75" style="white-space: pre-line;">
+                        @sobre?.TextoHistoria
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-dark border-warning shadow-lg rounded-4 p-4 h-100">
+                <div class="card-body">
+                    <h3 class="text-warning fw-bold mb-3"><i class="bi bi-bullseye me-2"></i> @sobre?.TituloMissao</h3>
+                    <p class="text-light opacity-75" style="white-space: pre-line;">
+                        @sobre?.TextoMissao
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secção de Membros / Equipe -->
+    <div class="text-center mb-4">
+        <h2 class="text-warning fw-bold">A Nossa Equipe</h2>
+        <p class="text-light opacity-75">Conheça os músicos e servos que integram o Ministério Shekinah.</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var membro in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card bg-dark border-secondary shadow-lg rounded-4 text-center p-4 h-100">
+                        <div class="card-body">
+                            @if (!string.IsNullOrEmpty(membro.FotoUrl))
+                            {
+                                <img src="@membro.FotoUrl" alt="@membro.Nome" class="rounded-circle border border-warning mb-3" style="width: 100px; height: 100px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-black border border-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                    <i class="bi bi-person-fill display-5 text-warning"></i>
+                                </div>
+                            }
+                            <h4 class="text-white fw-bold mb-1">@membro.Nome</h4>
+                            <span class="badge bg-warning text-dark fw-bold mb-3">@membro.Funcao</span>
+                            <p class="text-light opacity-75 small">@membro.Bio</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card bg-dark border-secondary shadow-lg rounded-4 p-5 text-center">
+            <div class="card-body">
+                <i class="bi bi-people display-3 text-warning mb-3"></i>
+                <h4 class="text-white fw-bold">Equipe em atualização</h4>
+                <p class="text-light opacity-75 mb-0">Em breve publicaremos os perfis dos membros do ministério.</p>
+            </div>
+        </div>
+    }
+</div>

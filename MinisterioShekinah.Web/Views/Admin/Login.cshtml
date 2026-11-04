@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Login Administrativo - Ministério Shekinah";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card bg-dark border-warning shadow-lg rounded-4 p-4 p-md-5" style="max-width: 450px; width: 100%;">
+        <div class="text-center mb-4">
+            <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-2">ÁREA RESTRITA</span>
+            <h2 class="text-warning fw-bold">Painel Shekinah</h2>
+            <p class="text-light opacity-75 small">Insira as suas credenciais de acesso para gerir a agenda.</p>
+        </div>
+
+        @if (ViewBag.Erro != null)
+        {
+            <div class="alert alert-danger py-2 small text-center mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> @ViewBag.Erro
+            </div>
+        }
+
+        <form asp-action="Login" method="post">
+            <div class="mb-3">
+                <label class="form-label text-warning small fw-bold">Utilizador</label>
+                <input type="text" name="usuario" class="form-control bg-black text-light border-secondary" placeholder="Digite o utilizador" required autocomplete="username" />
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-warning small fw-bold">Palavra-passe</label>
+                <input type="password" name="senha" class="form-control bg-black text-light border-secondary" placeholder="Digite a palavra-passe" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Entrar no Painel
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+
+    .form-control:focus {
+        background-color: #000;
+        color: #fff;
+        border-color: #dfb235;
+        box-shadow: 0 0 0 0.25rem rgba(223, 178, 53, 0.25);
+    }
+</style>

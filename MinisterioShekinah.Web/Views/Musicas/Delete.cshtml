@@ -1,0 +1,38 @@
+﻿@model MinisterioShekinah.Web.Models.Musica
+
+@{
+    ViewData["Title"] = "Excluir Cifra - Ministério Shekinah";
+}
+
+<div class="container my-5" style="max-width: 600px;">
+    <div class="card bg-dark border-danger shadow-lg rounded-4 p-4 text-light">
+        <div class="text-center mb-4">
+            <i class="bi bi-exclamation-triangle-fill text-warning display-3 mb-2"></i>
+            <h2 class="text-danger fw-bold">Excluir Canção</h2>
+            <p class="text-light opacity-75">Tem certeza de que deseja apagar esta música permanentemente do repertório?</p>
+        </div>
+
+        <div class="bg-black p-3 rounded-3 border border-secondary mb-4">
+            <h4 class="text-warning fw-bold mb-1">@Model.Titulo</h4>
+            <p class="text-light opacity-75 small mb-2">Artista: @(string.IsNullOrEmpty(Model.Artista) ? "Ministério Shekinah" : Model.Artista)</p>
+            <span class="badge bg-warning text-dark fw-bold">Tom Original: @Model.TomOriginal</span>
+        </div>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex justify-content-between gap-3">
+                <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light w-50 fw-bold">Cancelar</a>
+                <button type="submit" class="btn btn-danger w-50 fw-bold shadow">
+                    <i class="bi bi-trash-fill me-1"></i> Sim, Excluir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+</style>

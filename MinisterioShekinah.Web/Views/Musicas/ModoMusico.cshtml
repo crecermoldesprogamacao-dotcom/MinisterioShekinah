@@ -1,0 +1,71 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.Musica>
+@{
+    ViewData["Title"] = "Modo Músico / Altar - Ministério Shekinah";
+}
+
+<div class="container my-4" style="max-width: 900px;">
+    <!-- Cabeçalho Fixo do Modo Altar com Controlo de Rolagem -->
+    <div class="card bg-dark border-warning shadow-lg rounded-4 p-3 mb-4 sticky-top" style="top: 85px; z-index: 1000;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h3 class="text-warning fw-bold m-0"><i class="bi bi-music-note-list me-2"></i> Modo Músico / Altar</h3>
+                <p class="text-light opacity-75 small m-0">Ministério Shekinah - Valinhos/SP</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Botões de Controlo de Rolagem -->
+                <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-3" id="btnPlayGlobal">
+                    <i class="bi bi-play-fill"></i> Rolagem Auto
+                </button>
+                <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold px-2" id="btnVelocidadeMenos">-</button>
+                <span id="velocidadeIndicador" class="badge bg-warning text-dark fw-bold">1x</span>
+                <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold px-2" id="btnVelocidadeMais">+</button>
+                
+                <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold ms-2">Voltar ao Repertório</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagem de Aviso caso o filtro esteja ativo -->
+    <div id="avisoFiltro" class="alert alert-warning bg-dark text-warning border-warning mb-4 d-none">
+        <i class="bi bi-info-circle-fill me-2"></i> A exibir apenas as músicas selecionadas para a Missa. <a asp-controller="Home" asp-action="Repertorio" class="alert-link text-light underline">Alterar seleção no Repertório</a>.
+    </div>
+
+    <!-- Lista Contínua de Músicas -->
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var musica in Model)
+        {
+            <div class="card bg-dark border-secondary mb-5 shadow-lg rounded-4 overflow-hidden card-altar-musica" data-id="@musica.Id">
+                <div class="card-header bg-black border-bottom border-warning py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="text-warning fw-bold mb-1">@musica.Titulo</h4>
+                        <span class="text-light opacity-75 small">@(string.IsNullOrEmpty(musica.Artista) ? "Ministério Shekinah" : musica.Artista)</span>
+                    </div>
+                    <span class="badge bg-warning text-dark fw-bold px-3 py-2">Tom: @musica.TomOriginal?.ToUpper()</span>
+                </div>
+                <div class="card-body bg-dark text-light p-4">
+                    <pre class="font-monospace text-light m-0" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.7;">@musica.Cifra</pre>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <p class="text-muted">Ainda não existem músicas cadastradas no repertório.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/modo-musico-filtro.js?v=2"></script>
+    <script src="~/js/cifra-tools.js?v=2"></script>
+    <script src="~/js/modo-musico.js?v=2"></script>
+}
+
+<style>
+    body {
+        background-color: #0b0b0d;
+        color: #f8f9fa;
+    }
+</style>

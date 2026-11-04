@@ -1,0 +1,68 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.EventoMissa>
+
+@{
+    ViewData["Title"] = "Painel Litúrgico e Musical";
+}
+
+<div class="space-y-8">
+    <!-- Cabeçalho -->
+    <div class="bg-gradient-to-r from-[#111827] to-[#1f2937] border border-shekinah-border p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gold-light tracking-wide">Ministério Shekinah</h2>
+            <p class="text-slate-400 text-sm mt-1">Gestão de Celebrações, Repertório Musical e Escalas Litúrgicas.</p>
+        </div>
+        <div class="px-4 py-2 bg-gold/10 border border-gold/30 rounded-xl text-gold text-xs font-semibold tracking-wider uppercase">
+            SQLite + HTMX Ativo
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Formulário de Agendamento -->
+        <div class="lg:col-span-1 bg-shekinah-card border border-shekinah-border p-6 rounded-2xl shadow-xl h-fit">
+            <h3 class="text-xl font-semibold text-gold mb-4 flex items-center gap-2">
+                <span>➕</span> Nova Celebração
+            </h3>
+            
+            <form hx-post="/Eventos/Criar" hx-target="#tabela-missas" hx-swap="innerHTML" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Título da Celebração</label>
+                    <input type="text" name="Titulo" required placeholder="Ex: Missa Solene de Domingo"
+                           class="w-full bg-[#0b0f19] border border-shekinah-border rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-gold transition-colors" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Data e Hora</label>
+                    <input type="datetime-local" name="DataHora" required
+                           class="w-full bg-[#0b0f19] border border-shekinah-border rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-gold transition-colors" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Local / Igreja</label>
+                    <input type="text" name="Local" required placeholder="Ex: Matriz Principal"
+                           class="w-full bg-[#0b0f19] border border-shekinah-border rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-gold transition-colors" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Observações / Cores</label>
+                    <textarea name="Descricao" rows="2" placeholder="Cor litúrgica, avisos..."
+                              class="w-full bg-[#0b0f19] border border-shekinah-border rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-gold transition-colors"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-gold to-gold-dark text-black font-bold rounded-xl shadow-lg hover:brightness-110 transition-all">
+                    Guardar Celebração
+                </button>
+            </form>
+        </div>
+
+        <!-- Lista e Gestão Dinâmica -->
+        <div class="lg:col-span-2 bg-shekinah-card border border-shekinah-border p-6 rounded-2xl shadow-xl">
+            <h3 class="text-xl font-semibold text-gold mb-4 flex items-center gap-2">
+                <span>⛪</span> Celebrações & Escalas
+            </h3>
+
+            <div id="tabela-missas">
+                @await Html.PartialAsync("_ListaMissas", Model)
+            </div>
+        </div>
+    </div>
+</div>

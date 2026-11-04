@@ -1,0 +1,55 @@
+﻿@model MinisterioShekinah.Web.Models.AgendaItem
+
+@{
+    ViewData["Title"] = "Adicionar Evento - Ministério Shekinah";
+}
+
+<div class="container my-5" style="max-width: 600px;">
+    <div class="card bg-dark border-warning shadow-lg rounded-4 p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge bg-warning text-dark fw-bold px-3 py-1 mb-1">NOVO COMPROMISSO</span>
+                <h2 class="text-warning fw-bold mb-0">Adicionar à Agenda</h2>
+            </div>
+            <a href="/Admin/Painel" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Voltar
+            </a>
+        </div>
+
+        <form asp-action="CriarEvento" method="post">
+            <div class="mb-3">
+                <label asp-for="Titulo" class="form-label text-light small fw-semibold">Título do Evento</label>
+                <input asp-for="Titulo" class="form-control bg-black text-light border-secondary" placeholder="Ex: Ensaio Geral / Santa Missa" required />
+                <span asp-validation-for="Titulo" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DataHora" class="form-label text-light small fw-semibold">Data e Hora</label>
+                <input asp-for="DataHora" type="datetime-local" class="form-control bg-black text-light border-secondary" required />
+                <span asp-validation-for="DataHora" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Tipo" class="form-label text-light small fw-semibold">Tipo de Evento</label>
+                <input asp-for="Tipo" class="form-control bg-black text-light border-secondary" placeholder="Ex: Ensaio Geral, Santa Missa, Adoração" required />
+                <span asp-validation-for="Tipo" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Local" class="form-label text-light small fw-semibold">Local</label>
+                <input asp-for="Local" class="form-control bg-black text-light border-secondary" placeholder="Ex: Igreja Matriz - Valinhos/SP" required />
+                <span asp-validation-for="Local" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Descricao" class="form-label text-light small fw-semibold">Descrição / Observações</label>
+                <textarea asp-for="Descricao" class="form-control bg-black text-light border-secondary" rows="3" placeholder="Detalhes adicionais sobre o compromisso..."></textarea>
+                <span asp-validation-for="Descricao" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-check-circle-fill me-2"></i> Guardar Evento
+            </button>
+        </form>
+    </div>
+</div>

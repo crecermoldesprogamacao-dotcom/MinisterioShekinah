@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ministério de Música Shekinah</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        body {
+            padding-top: 95px;
+            background-color: #121212;
+            color: #f8f9fa !important;
+        }
+
+        .text-gold {
+            color: #dfb235 !important;
+        }
+
+        p, .text-muted {
+            color: #d1d5db !important;
+        }
+
+        .footer a {
+            color: #f8f9fa !important;
+            text-decoration: none;
+        }
+
+            .footer a:hover {
+                color: #dfb235 !important;
+            }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-warning shadow-lg fixed-top">
+            <div class="container">
+                <a class="navbar-brand text-warning fw-bold fs-4 d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/logo.png" alt="Ministério Shekinah" class="rounded-circle border border-warning" style="width: 45px; height: 45px; object-fit: cover;" />
+                    <span>Ministério Shekinah</span>
+                </a>
+                <button class="navbar-toggler border-warning" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                    <ul class="navbar-nav align-items-center gap-3">
+                        <li class="nav-item">
+                            <a class="nav-link text-light fw-semibold" asp-controller="Home" asp-action="Repertorio">Repertório</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light fw-semibold" asp-controller="Musicas" asp-action="ModoMusico">Modo Altar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light fw-semibold" asp-controller="Agenda" asp-action="Index">Agenda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light fw-semibold" asp-controller="Videos" asp-action="Index">Vídeos & Louvor</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light fw-semibold" asp-controller="Sobre" asp-action="Index">Sobre Nós</a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <a asp-controller="Home" asp-action="VelaVirtual" class="btn btn-warning fw-bold text-dark rounded-pill px-4">
+                                <i class="bi bi-fire me-1"></i> Vela Virtual
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    <footer class="footer py-5 mt-5 border-top border-secondary" style="background-color: #08080a;">
+        <div class="container text-center text-md-start">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-gold mb-3">Ministério Shekinah</h5>
+                    <p class="text-muted">Louvor · Adoração · Evangelização. Levar a presença manifesta de Deus através da música a Valinhos e região.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <h5 class="text-gold mb-3">Siga-nos</h5>
+                    <a href="https://instagram.com/shekinahvalinhos" target="_blank" class="text-light fs-4 me-3"><i class="fab fa-instagram text-gold"></i></a>
+                    <a href="#" class="text-light fs-4 me-3"><i class="fab fa-youtube text-gold"></i></a>
+                </div>
+                <div class="col-md-4 mb-4 text-md-end">
+                    <h5 class="text-gold mb-3">Contato</h5>
+                    <p class="text-muted mb-1">
+                        <a href="https://instagram.com/shekinahvalinhos" target="_blank" class="text-muted text-decoration-none">
+                            <i class="fab fa-instagram text-gold me-2"></i> @@shekinahvalinhos
+                        </a>
+                    </p>
+                    <p class="text-muted mb-0">
+                        <a href="mailto:anjosdaadoracao57@gmail.com" class="text-muted text-decoration-none">
+                            <i class="fas fa-envelope text-gold me-2"></i> anjosdaadoracao57@gmail.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <p class="text-center text-muted small mb-0">&copy; 2026 Ministério Shekinah (Valinhos/SP). Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts Essenciais do Bootstrap e Cifras -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/cifra-tools.js?v=2"></script>
+    
+    <!-- Script de Reforço para o Menu Hamburguer no Telemóvel -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggler = document.querySelector(".navbar-toggler");
+            const navbarNav = document.getElementById("navbarNav");
+
+            if (toggler && navbarNav) {
+                toggler.addEventListener("click", function() {
+                    navbarNav.classList.toggle("show");
+                });
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

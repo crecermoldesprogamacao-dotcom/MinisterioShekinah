@@ -1,0 +1,60 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.AgendaItem>
+
+@{
+    ViewData["Title"] = "Painel Administrativo - Ministério Shekinah";
+}
+
+<div class="container my-5" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-2">ÁREA RESTRITA</span>
+            <h1 class="text-warning fw-bold">Painel de Gestão da Agenda</h1>
+        </div>
+        <a href="/Admin/CriarEvento" class="btn btn-warning text-dark fw-bold px-4 rounded-pill">
+            <i class="bi bi-plus-lg me-1"></i> Novo Evento
+        </a>
+    </div>
+
+    <div class="card bg-dark border-warning shadow-lg rounded-4 p-4">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead>
+                    <tr class="text-warning border-bottom border-secondary">
+                        <th>Data/Hora</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Local</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="fw-bold text-white">@item.Titulo</td>
+                                <td><span class="badge bg-secondary text-warning">@item.Tipo</span></td>
+                                <td>@item.Local</td>
+                                <td class="text-end">
+                                    <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja apagar este evento?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3">
+                                            <i class="bi bi-trash-fill"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Nenhum evento registado na base de dados.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,93 @@
+﻿@{
+    ViewData["Title"] = "Início - Ministério Shekinah";
+}
+
+<div class="container my-5">
+    <!-- Secção Principal / Herói -->
+    <div class="p-5 mb-5 bg-dark border border-warning rounded-4 shadow-lg text-center text-md-start d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <div class="mb-4 mb-md-0">
+            <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-3">MINISTÉRIO LITÚRGICO • VALINHOS/SP</span>
+            <h1 class="display-4 text-warning fw-bold mb-3">Ministério Shekinah</h1>
+            <p class="text-light opacity-75 lead mb-4" style="max-width: 650px;">
+                Bem-vindo ao sistema oficial de gestão de repertório, cifras dinâmicas e ferramentas para o altar. Servindo com excelência e louvor na Santa Missa.
+            </p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+                <a asp-controller="Home" asp-action="Repertorio" class="btn btn-warning text-dark fw-bold px-4 py-3 shadow rounded-pill">
+                    <i class="bi bi-music-note-list me-2"></i> Acessar ao Repertório
+                </a>
+                <a asp-controller="Musicas" asp-action="ModoMusico" class="btn btn-outline-warning fw-bold px-4 py-3 shadow rounded-pill">
+                    <i class="bi bi-phone-fill me-2"></i> Modo Músico (Altar)
+                </a>
+            </div>
+        </div>
+        <div class="text-center">
+            <div class="bg-black border border-warning p-5 rounded-circle shadow-lg d-inline-block">
+                <i class="bi bi-mic-fill text-warning display-1"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secção do Instagram Atualizada e Limpa -->
+    <div class="row align-items-center my-5 p-4 bg-dark border border-warning rounded-4 shadow-lg">
+        <!-- Lado Esquerdo: Textos e Botão -->
+        <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
+            <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-2">SIGA-NOS NO INSTAGRAM</span>
+            <h2 class="text-warning fw-bold mb-2">@@shekinahvalinhos</h2>
+            <p class="text-light opacity-75 mb-4">
+                Acompanhe os bastidores dos nossos ensaios, escala semanal para a Santa Missa, reflexões litúrgicas e muito mais no nosso perfil oficial.
+            </p>
+            <div>
+                <a href="https://www.instagram.com/shekinahvalinhos" target="_blank" rel="noopener noreferrer" class="btn btn-warning text-dark fw-bold px-4 py-2 shadow rounded-pill">
+                    <i class="bi bi-instagram me-2"></i> Visitar Instagram
+                </a>
+            </div>
+        </div>
+
+        <!-- Lado Direito: Apenas UM Card Clicável -->
+        <div class="col-lg-5 text-center">
+            <a href="https://www.instagram.com/shekinahvalinhos" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                <div class="card bg-black border-warning shadow-lg rounded-4 p-4 text-center h-100 transition-hover">
+                    <div class="card-body">
+                        <i class="bi bi-camera-fill display-3 text-warning mb-3"></i>
+                        <h4 class="text-white fw-bold mb-1">Ministério Shekinah</h4>
+                        <p class="text-light opacity-75 small m-0">Servindo com excelência ao altar do Senhor.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+
+    .text-warning {
+        color: #dfb235 !important;
+    }
+
+    .border-warning {
+        border-color: #dfb235 !important;
+    }
+
+    .btn-warning {
+        background-color: #dfb235;
+        border-color: #dfb235;
+    }
+
+        .btn-warning:hover {
+            background-color: #c4992b;
+            border-color: #c4992b;
+        }
+
+    .transition-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .transition-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 3rem rgba(223, 178, 53, 0.15) !important;
+        }
+</style>

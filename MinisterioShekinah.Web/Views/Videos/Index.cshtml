@@ -1,0 +1,65 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.VideoItem>
+
+@{
+    ViewData["Title"] = "Vídeos & Louvor - Ministério Shekinah";
+}
+
+<div class="container my-5" style="max-width: 1100px;">
+    <!-- Cabeçalho -->
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark fw-bold px-3 py-2 mb-2">GALERIA DE LOUVORES</span>
+        <h1 class="text-warning fw-bold display-5">Vídeos</h1>
+        <p class="text-light opacity-75">Reviva momentos de adoração, ensaios abertos e canções que elevam o espírito.</p>
+        
+        @if (Context.Session.GetString("AdminLogado") == "True")
+        {
+            <div class="mt-3">
+                <a href="/Videos/Gerir" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">
+                    <i class="bi bi-gear-fill me-2"></i> Gerir Vídeos (Admin)
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Lista de Vídeos -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var video in Model)
+            {
+                <div class="col-md-6">
+                    <div class="card bg-dark border-warning shadow-lg rounded-4 h-100 overflow-hidden">
+                        <div class="ratio ratio-16x9">
+                            <iframe src="@video.YoutubeUrl" title="@video.Titulo" allowfullscreen></iframe>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h3 class="text-white fw-bold fs-4 mb-2">@video.Titulo</h3>
+                                <p class="text-light opacity-75 small mb-3">@video.Descricao</p>
+                            </div>
+                            <div class="pt-3 border-top border-secondary d-flex justify-content-between align-items-center">
+                                <span class="text-warning small"><i class="bi bi-calendar-event me-1"></i> @video.DataPublicacao.ToString("dd/MM/yyyy")</span>
+                                <span class="text-muted small">Ministério Shekinah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Estado Vazio com Exemplo Estético -->
+        <div class="card bg-dark border-secondary shadow-lg rounded-4 p-5 text-center">
+            <div class="card-body">
+                <i class="bi bi-youtube display-3 text-warning mb-3"></i>
+                <h3 class="text-white fw-bold">Nenhum vídeo publicado de momento</h3>
+                <p class="text-light opacity-75 mb-4">Em breve publicaremos os registos em vídeo das nossos eventos e ensaios.</p>
+                <div class="p-3 bg-black border border-warning rounded-3 d-inline-block text-start">
+                    <h5 class="text-warning fw-bold mb-1"><i class="bi bi-play-circle-fill me-2"></i> Siga-nos no YouTube:</h5>
+                    <p class="text-light small mb-0">Acesse o nosso canal oficial para acompanhar todas as novidades e transmissões ao vivo.</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>

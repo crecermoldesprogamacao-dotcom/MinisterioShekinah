@@ -1,0 +1,99 @@
+﻿@model MinisterioShekinah.Web.Models.Musica
+@{
+    ViewData["Title"] = Model.Titulo + " - Ministério Shekinah";
+}
+
+<div class="container my-4" style="max-width: 950px;">
+    <!-- Cabeçalho da Música -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-warning fw-bold mb-1">@Model.Titulo</h1>
+            <p class="text-light opacity-75 m-0">@(string.IsNullOrEmpty(Model.Artista) ? "Ministério Shekinah" : Model.Artista)</p>
+        </div>
+        <div>
+            <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold">
+                <i class="bi bi-arrow-left me-1"></i> Voltar ao Repertório
+            </a>
+        </div>
+    </div>
+
+    <!-- Barra de Ferramentas Estilo Cifra Club / Banda Restauração -->
+    <div class="card bg-dark border-warning mb-4 shadow-lg sticky-top" style="top: 80px; z-index: 1000;">
+        <div class="card-body py-3 px-3 d-flex flex-wrap align-items-center justify-content-between gap-3 text-light">
+            
+            <!-- Controlo de Tom -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-warning">Tom:</span>
+                <span id="tomAtualExibicao" class="badge bg-warning text-dark fs-6 fw-bold px-2 py-1">@Model.TomOriginal?.ToUpper()</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-warning text-light fw-bold" id="btnTomMenos" title="Diminuir Tom">-</button>
+                    <button type="button" class="btn btn-outline-warning text-light fw-bold" id="btnTomMais" title="Aumentar Tom">+</button>
+                </div>
+                <button type="button" class="btn btn-link text-warning p-0 text-decoration-none small fw-bold" id="btnTomReset">Restaurar</button>
+                <input type="hidden" id="tomOriginal" value="@Model.TomOriginal" />
+            </div>
+
+            <!-- Controlo de Capotraste -->
+            <div class="d-flex align-items-center gap-2">
+                <label for="capoSelect" class="fw-bold text-warning mb-0 small">Capotraste:</label>
+                <select id="capoSelect" class="form-select form-select-sm bg-black text-warning border-warning" style="width: 110px;">
+                    <option value="0" selected="@(Model.Capotraste == 0)">Nenhum</option>
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i" selected="@(Model.Capotraste == i)">@(i)ª Casa</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Controlo de Texto / Zoom -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-warning">Texto:</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-warning text-light fw-bold" id="btnFonteMenos" title="Diminuir Letra">A-</button>
+                    <button type="button" class="btn btn-outline-warning text-light fw-bold" id="btnFonteMais" title="Aumentar Letra">A+</button>
+                </div>
+            </div>
+
+            <!-- Rolagem Automática -->
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-3" id="btnPlayRolagem">
+                    <i class="bi bi-play-fill"></i> Rolagem
+                </button>
+                <button type="button" class="btn btn-outline-warning text-light btn-sm px-2 py-0 fw-bold" id="btnVelocidadeMenos">-</button>
+                <span id="velocidadeIndicador" class="badge bg-warning text-dark fw-bold">1x</span>
+                <button type="button" class="btn btn-outline-warning text-light btn-sm px-2 py-0 fw-bold" id="btnVelocidadeMais">+</button>
+            </div>
+
+            <!-- Ações: Impressão -->
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloco da Cifra Dinâmica -->
+    <div class="card bg-dark border-secondary shadow-lg rounded-4 p-4 mb-4">
+        <pre id="cifraConteudo" class="font-monospace text-light m-0" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.7;">@Model.Cifra</pre>
+    </div>
+
+    <!-- Botão de Excluir / Apagar Cifra -->
+    <div class="d-flex justify-content-end mb-5">
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger fw-bold px-4 py-2 rounded-pill shadow-sm">
+            <i class="bi bi-trash-fill me-2"></i> Excluir Esta Música
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- O ?v=2 força o browser a carregar a nova versão do script sem cache -->
+    <script src="~/js/cifra-tools.js?v=3"></script>
+}
+
+<style>
+    body {
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+</style>

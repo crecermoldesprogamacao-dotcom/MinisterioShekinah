@@ -1,0 +1,103 @@
+﻿@model IEnumerable<MinisterioShekinah.Web.Models.EventoMissa>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-12 text-slate-500 border border-dashed border-shekinah-border rounded-xl">
+        <p>Nenhuma celebração registada. Comece por criar uma ao lado.</p>
+    </div>
+}
+else
+{
+    <div class="space-y-6">
+        @foreach (var item in Model)
+        {
+            <div class="bg-[#0b0f19] border border-shekinah-border hover:border-gold/50 transition-all p-6 rounded-xl space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 bg-gold/10 text-gold text-xs font-semibold rounded-md border border-gold/20">@item.Local</span>
+                            <span class="text-xs text-slate-400">@item.DataHora.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-slate-100 mt-1">@item.Titulo</h4>
+                        @if (!string.IsNullOrEmpty(item.Descricao))
+                        {
+                            <p class="text-sm text-slate-400 mt-1">@item.Descricao</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Secção de Repertório e Escala -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-shekinah-border">
+                    <!-- Repertório -->
+                    <div class="bg-shekinah-card p-4 rounded-lg border border-shekinah-border">
+                        <h5 class="text-xs font-bold uppercase tracking-wider text-gold mb-2">🎵 Repertório Musical</h5>
+                        @if (!item.Repertorio.Any())
+                        {
+                            <p class="text-xs text-slate-500 italic mb-3">Sem músicas adicionadas.</p>
+                        }
+                        else
+                        {
+                            <ul class="space-y-1.5 mb-3 text-sm">
+                                @foreach (var m in item.Repertorio)
+                                {
+                                    <li class="flex justify-between items-center text-slate-300 text-xs bg-[#0b0f19] p-2 rounded border border-shekinah-border">
+                                        <span><strong class="text-gold">@m.Momento:</strong> @m.TituloMusica</span>
+                                        @if (!string.IsNullOrEmpty(m.TomOuCifra))
+                                        {
+                                            <span class="text-slate-400 font-mono bg-shekinah-border px-1.5 py-0.5 rounded">Tom: @m.TomOuCifra</span>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <form hx-post="/Eventos/AdicionarMusica" hx-target="#tabela-missas" hx-swap="innerHTML" class="space-y-2">
+                            <input type="hidden" name="eventoId" value="@item.Id" />
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" name="momento" required placeholder="Momento (ex: Entrada)" class="bg-[#0b0f19] border border-shekinah-border text-xs rounded px-2 py-1.5 text-slate-100 focus:border-gold focus:outline-none" />
+                                <input type="text" name="tomOuCifra" placeholder="Tom (ex: D)" class="bg-[#0b0f19] border border-shekinah-border text-xs rounded px-2 py-1.5 text-slate-100 focus:border-gold focus:outline-none" />
+                            </div>
+                            <input type="text" name="tituloMusica" required placeholder="Nome da Música / Canto" class="w-full bg-[#0b0f19] border border-shekinah-border text-xs rounded px-2 py-1.5 text-slate-100 focus:border-gold focus:outline-none" />
+                            <button type="submit" class="w-full py-1 bg-gold/20 hover:bg-gold/30 text-gold text-xs font-semibold rounded transition-colors">+ Adicionar Música</button>
+                        </form>
+                    </div>
+
+                    <!-- Escala de Músicos & RSVP -->
+                    <div class="bg-shekinah-card p-4 rounded-lg border border-shekinah-border">
+                        <h5 class="text-xs font-bold uppercase tracking-wider text-gold mb-2">👥 Escala & RSVP</h5>
+                        @if (!item.Escala.Any())
+                        {
+                            <p class="text-xs text-slate-500 italic mb-3">Nenhum servo escalado.</p>
+                        }
+                        else
+                        {
+                            <ul class="space-y-1.5 mb-3 text-sm">
+                                @foreach (var s in item.Escala)
+                                {
+                                    <li class="flex justify-between items-center text-xs bg-[#0b0f19] p-2 rounded border border-shekinah-border">
+                                        <div>
+                                            <span class="font-bold text-slate-200">@s.NomeMusico</span>
+                                            <span class="text-slate-400 block">@s.Funcao</span>
+                                        </div>
+                                        <form hx-post="/Eventos/AlternarRSVP?id=@s.Id&eventoId=@item.Id" hx-target="#tabela-missas" hx-swap="innerHTML">
+                                            <button type="submit" class="px-2 py-1 rounded text-[10px] font-bold @(s.Confirmado ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-amber-950 text-amber-400 border border-amber-800")">
+                                                @(s.Confirmado ? "✓ Confirmado" : "⏳ Pendente")
+                                            </button>
+                                        </form>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <form hx-post="/Eventos/AdicionarMusico" hx-target="#tabela-missas" hx-swap="innerHTML" class="space-y-2">
+                            <input type="hidden" name="eventoId" value="@item.Id" />
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" name="nomeMusico" required placeholder="Nome do Músico" class="bg-[#0b0f19] border border-shekinah-border text-xs rounded px-2 py-1.5 text-slate-100 focus:border-gold focus:outline-none" />
+                                <input type="text" name="funcao" required placeholder="Função (ex: Violão/Vocal)" class="bg-[#0b0f19] border border-shekinah-border text-xs rounded px-2 py-1.5 text-slate-100 focus:border-gold focus:outline-none" />
+                            </div>
+                            <button type="submit" class="w-full py-1 bg-gold/20 hover:bg-gold/30 text-gold text-xs font-semibold rounded transition-colors">+ Escalar Servo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

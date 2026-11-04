@@ -1,0 +1,50 @@
+﻿@model MinisterioShekinah.Web.Models.VideoItem
+
+@{
+    ViewData["Title"] = "Adicionar Vídeo - Ministério Shekinah";
+}
+
+<div class="container my-5" style="max-width: 600px;">
+    <div class="card bg-dark border-warning shadow-lg rounded-4 p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge bg-warning text-dark fw-bold px-3 py-1 mb-1">NOVO CONTEÚDO</span>
+                <h2 class="text-warning fw-bold mb-0">Adicionar Vídeo</h2>
+            </div>
+            <a href="/Videos/Gerir" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Voltar
+            </a>
+        </div>
+
+        <form asp-action="Adicionar" method="post">
+            <div class="mb-3">
+                <label asp-for="Titulo" class="form-label text-light small fw-semibold">Título do Vídeo / Louvor</label>
+                <input asp-for="Titulo" class="form-control bg-black text-light border-secondary" placeholder="Ex: Ministração de Adoração - Santa Missa" required />
+                <span asp-validation-for="Titulo" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="YoutubeUrl" class="form-label text-light small fw-semibold">URL de Incorporação (YouTube Embed)</label>
+                <input asp-for="YoutubeUrl" class="form-control bg-black text-light border-secondary" placeholder="https://www.youtube.com/embed/SEU_VIDEO_ID" required />
+                <div class="form-text text-muted small">Exemplo: <code>https://www.youtube.com/embed/dQw4w9WgXcQ</code></div>
+                <span asp-validation-for="YoutubeUrl" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Descricao" class="form-label text-light small fw-semibold">Descrição / Observações</label>
+                <textarea asp-for="Descricao" class="form-control bg-black text-light border-secondary" rows="3" placeholder="Detalhes sobre a canção ou celebração..."></textarea>
+                <span asp-validation-for="Descricao" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="DataPublicacao" class="form-label text-light small fw-semibold">Data de Publicação</label>
+                <input asp-for="DataPublicacao" type="date" class="form-control bg-black text-light border-secondary" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                <span asp-validation-for="DataPublicacao" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-check-circle-fill me-2"></i> Guardar Vídeo
+            </button>
+        </form>
+    </div>
+</div>
