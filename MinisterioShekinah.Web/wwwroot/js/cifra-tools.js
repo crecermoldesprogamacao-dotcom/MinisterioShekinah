@@ -14,20 +14,17 @@
     function inicializar() {
         const cifraElement = document.getElementById("cifraConteudo");
         const capoSelect = document.getElementById("capoSelect");
-
         if (cifraElement && cifraElement.innerText.trim() !== "") {
             cifraOriginalTexto = cifraElement.innerText;
             capotrasteAtual = parseInt(capoSelect ? capoSelect.value : "0");
             atualizarCifra();
         } else {
-            // Se o conteúdo ainda estiver a carregar, tenta novamente em breve
             setTimeout(inicializar, 50);
         }
     }
 
     document.addEventListener("DOMContentLoaded", function () {
         inicializar();
-
         document.getElementById("btnTomMenos")?.addEventListener("click", () => mudarTom(-1));
         document.getElementById("btnTomMais")?.addEventListener("click", () => mudarTom(1));
         document.getElementById("btnTomReset")?.addEventListener("click", () => resetarTom());
@@ -111,28 +108,40 @@
     function atualizarCifra() {
         const cifraElement = document.getElementById("cifraConteudo");
         if (!cifraElement || !cifraOriginalTexto) return;
-        let deslocamentoTotal = semitonesAtuais + capotrasteAtual;
+
+        // 1. Os acordes na tela mudam APENAS com os botões de tom (forma que o músico toca)
         let linhas = cifraOriginalTexto.split('\n');
         let linhasProcessadas = linhas.map(linha => {
             return linha.split(/(\s+)/).map(token => {
                 if (!token.trim()) return token;
                 let tokenLimpo = token.startsWith('[') && token.endsWith(']') ? token.substring(1, token.length - 1) : token;
                 if (token.startsWith('[') && token.endsWith(']')) {
-                    return transporAcorde(token, deslocamentoTotal);
+                    return transporAcorde(token, semitonesAtuais);
                 }
                 if (ehAcordeValido(tokenLimpo)) {
-                    return transporAcorde(token, deslocamentoTotal);
+                    return transporAcorde(token, semitonesAtuais);
                 }
                 return token;
             }).join('');
         });
         cifraElement.innerText = linhasProcessadas.join('\n');
+
+        // 2. O tom exibido no cabeçalho considera o tom + o efeito do capotraste
         const exibeTom = document.getElementById("tomAtualExibicao");
         const tomOriginalInput = document.getElementById("tomOriginal");
-        let tomOriginal = (tomOriginalInput && tomOriginalInput.value) ? tomOriginalInput.value : "G";
+        let tomOriginal = (tomOriginalInput && tomOriginalInput.value) ? tomOriginalInput.value : "C";
+
         if (exibeTom) {
-            let tomCalculado = transporAcorde(tomOriginal.trim(), deslocamentoTotal);
-            exibeTom.innerText = tomCalculado.toUpperCase();
+            let deslocamentoTotalParaTomReal = semitonesAtuais + capotrasteAtual;
+            let tomCalculado = transporAcorde(tomOriginal.trim(), deslocamentoTotalParaTomReal);
+
+            // Se houver capotraste ativo, mostra o tom real e a forma utilizada
+            if (capotrasteAtual > 0) {
+                let formaAtual = transporAcorde(tomOriginal.trim(), semitonesAtuais);
+                exibeTom.innerText = `${tomCalculado.toUpperCase()} (com forma de ${formaAtual.toUpperCase()})`;
+            } else {
+                exibeTom.innerText = tomCalculado.toUpperCase();
+            }
         }
     }
 
