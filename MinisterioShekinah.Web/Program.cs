@@ -50,7 +50,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco de autoverificação e correção definitiva na nuvem
+// Bloco de autoverificação e correção das tabelas na nuvem
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -58,9 +58,9 @@ using (var scope = app.Services.CreateScope())
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
 
-        // Executa comandos SQL seguros para alinhar as tabelas e corrigir o auto-incremento do ID
+        // Garante as tabelas e ajusta o tipo de data da Vela Virtual para timestamp sem zona (evita conflitos)
         context.Database.ExecuteSqlRaw(@"
-            -- 1. Garante a tabela Musicas e adiciona colunas se faltarem
+            -- 1. Musicas
             CREATE TABLE IF NOT EXISTS ""Musicas"" (
                 ""Id"" SERIAL PRIMARY KEY,
                 ""Titulo"" TEXT,
@@ -79,12 +79,10 @@ using (var scope = app.Services.CreateScope())
                 END IF;
             END $$;
 
-            -- Corrige o ID para garantir o auto-incremento (SERIAL/Identity)
             CREATE SEQUENCE IF NOT EXISTS ""Musicas_Id_seq"";
             ALTER TABLE ""Musicas"" ALTER COLUMN ""Id"" SET DEFAULT nextval('""Musicas_Id_seq""');
-            ALTER SEQUENCE ""Musicas_Id_seq"" OWNED BY ""Musicas"".""Id"";
 
-            -- 2. Tabela VelasVirtuais
+            -- 2. VelasVirtuais (Garante os campos corretos e tipos de data compatíveis)
             CREATE TABLE IF NOT EXISTS ""VelasVirtuais"" (
                 ""Id"" SERIAL PRIMARY KEY,
                 ""Nome"" TEXT,
@@ -96,11 +94,11 @@ using (var scope = app.Services.CreateScope())
             );
         ");
 
-        Console.WriteLine("--> Estrutura e auto-incremento corrigidos com sucesso na nuvem!");
+        Console.WriteLine("--> Tabelas e tipos de dados verificados com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> AVISO NA CORREÇÃO DO BANCO: {ex.Message}");
+        Console.WriteLine($"--> AVISO NA ATUALIZAÇÃO DO BANCO: {ex.Message}");
     }
 }
 
