@@ -24,9 +24,7 @@ namespace MinisterioShekinah.Web.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // Ignora temporariamente a propriedade MomentoLiturgico para evitar o erro de coluna em falta no PostgreSQL
-            modelBuilder.Entity<Musica>().Ignore(m => m.MomentoLiturgico);
+            // Propriedade MomentoLiturgico ativa e mapeada normalmente
         }
     }
 }

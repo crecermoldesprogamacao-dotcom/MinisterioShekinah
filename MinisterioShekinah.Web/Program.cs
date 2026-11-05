@@ -50,19 +50,39 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco seguro para garantir a criação do banco sem falhas de migração
+// Bloco seguro para garantir a criação do banco e adicionar a coluna MomentoLiturgico automaticamente
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
+
         context.Database.EnsureCreated();
-        Console.WriteLine("--> Banco de dados verificado e conectado com sucesso!");
+
+        // Garante que a coluna MomentoLiturgico existe fisicamente na tabela (evita o erro 42703)
+        context.Database.ExecuteSqlRaw(@"
+            DO $$ 
+            BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'Musicas') THEN
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Musicas' AND column_name = 'MomentoLiturgico') THEN
+                        ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
+                    END IF;
+                END IF;
+
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'musicas') THEN
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'musicas' AND column_name = 'MomentoLiturgico') THEN
+                        ALTER TABLE musicas ADD COLUMN ""MomentoLiturgico"" TEXT;
+                    END IF;
+                END IF;
+            END $$;
+        ");
+
+        Console.WriteLine("--> Base de dados e coluna MomentoLiturgico garantidas com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> ERRO CRÍTICO NA CONEXÃO DO BANCO: {ex.Message}");
+        Console.WriteLine($"--> ERRO CRÍTICO NA ATUALIZAÇÃO DO BANCO: {ex.Message}");
     }
 }
 
@@ -70,7 +90,6 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // UseHttpsRedirection comentado para evitar conflitos com o proxy reverso do Render em produção
     app.UseHsts();
 }
 else
