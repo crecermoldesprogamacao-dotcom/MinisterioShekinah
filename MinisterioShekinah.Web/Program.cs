@@ -25,10 +25,29 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Configuração do Banco de Dados:
-// Lê a variável de ambiente do Render (DATABASE_URL) ou usa o appsettings.json localmente
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// Função para converter a URL do Render (postgres://) no formato do Npgsql
+string GetConnectionString()
+{
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    if (string.IsNullOrEmpty(databaseUrl))
+    {
+        return builder.Configuration.GetConnectionString("DefaultConnection")
+               ?? throw new InvalidOperationException("String de conexão não encontrada.");
+    }
+
+    if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
+    {
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+
+        return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    }
+
+    return databaseUrl;
+}
+
+var connectionString = GetConnectionString();
 
 // Configuração do banco de dados PostgreSQL com DbContext (Npgsql)
 builder.Services.AddDbContext<ShekinahContext>(options =>
@@ -36,7 +55,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco para garantir que a base de dados e as tabelas existem na nuvem
+// Bloco para aplicar as migrações automaticamente no PostgreSQL da nuvem
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
