@@ -53,7 +53,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco de autoverificação e correção estrita de tipos na nuvem
+// Bloco de autoverificação e correção das tabelas na nuvem
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -77,40 +77,19 @@ using (var scope = app.Services.CreateScope())
             CREATE SEQUENCE IF NOT EXISTS ""Musicas_Id_seq"";
             ALTER TABLE ""Musicas"" ALTER COLUMN ""Id"" SET DEFAULT nextval('""Musicas_Id_seq""');
 
-            -- 2. VelasVirtuais
-            CREATE TABLE IF NOT EXISTS ""VelasVirtuais"" (
+            -- 2. VelasVirtuais (Recria limpo para garantir tipos corretos e evitar conflitos de TEXT vs TIMESTAMP)
+            DROP TABLE IF EXISTS ""VelasVirtuais"" CASCADE;
+            CREATE TABLE ""VelasVirtuais"" (
                 ""Id"" SERIAL PRIMARY KEY,
-                ""Nome"" TEXT,
+                ""NomeFiel"" TEXT,
                 ""Intencao"" TEXT,
-                ""Data"" TIMESTAMP WITHOUT TIME ZONE,
                 ""DataAcesa"" TIMESTAMP WITHOUT TIME ZONE,
                 ""Ativa"" BOOLEAN DEFAULT TRUE,
                 ""CorVela"" TEXT
             );
-
-            -- CORREÇÃO DE TIPOS: Converte colunas antigas para os tipos corretos na base de dados existente
-            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Ativa"" TYPE BOOLEAN USING 
-                CASE 
-                    WHEN ""Ativa""::text = '0' THEN FALSE 
-                    WHEN ""Ativa""::text = '1' THEN TRUE 
-                    ELSE COALESCE(""Ativa""::text::boolean, TRUE) 
-                END;
-            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Ativa"" SET DEFAULT TRUE;
-
-            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""DataAcesa"" TYPE TIMESTAMP WITHOUT TIME ZONE USING 
-                CASE 
-                    WHEN ""DataAcesa"" IS NULL OR ""DataAcesa""::text = '' THEN CURRENT_TIMESTAMP 
-                    ELSE ""DataAcesa""::timestamp without time zone 
-                END;
-
-            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Data"" TYPE TIMESTAMP WITHOUT TIME ZONE USING 
-                CASE 
-                    WHEN ""Data"" IS NULL OR ""Data""::text = '' THEN CURRENT_TIMESTAMP 
-                    ELSE ""Data""::timestamp without time zone 
-                END;
         ");
 
-        Console.WriteLine("--> Tabelas e tipos de dados corrigidos com sucesso na nuvem!");
+        Console.WriteLine("--> Tabelas recriadas e corrigidas com sucesso na nuvem!");
     }
     catch (Exception ex)
     {

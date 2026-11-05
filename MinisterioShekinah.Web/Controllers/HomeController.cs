@@ -61,9 +61,9 @@ namespace MinisterioShekinah.Web.Controllers
         // GET: /Home/VelaVirtual
         public async Task<IActionResult> VelaVirtual()
         {
-            var limiteData = DateTime.Now.AddDays(-7);
+            // Busca apenas as velas ativas ordenadas por data de forma segura
             var velas = await _context.VelasVirtuais
-                .Where(v => v.Ativa && v.DataAcesa >= limiteData)
+                .Where(v => v.Ativa)
                 .OrderByDescending(v => v.DataAcesa)
                 .ToListAsync();
 
@@ -89,7 +89,7 @@ namespace MinisterioShekinah.Web.Controllers
                 _context.VelasVirtuais.Add(novaVela);
                 await _context.SaveChangesAsync();
 
-                // Transmite os dados da nova vela em tempo real (100% cheia no primeiro instante)
+                // Transmite os dados da nova vela em tempo real
                 await _hubContext.Clients.All.SendAsync("ReceberNovaVela", new
                 {
                     nomeFiel = novaVela.NomeFiel,
