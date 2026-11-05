@@ -25,7 +25,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Ler a string de conexão do Render
+// Ler a string de conexão do Render com tratamento seguro da porta
 string rawDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
                         ?? "postgresql://ministerio_shekinah_db_user:M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB@dpg-dbm7d6l6e07s73bcmjq0-a/ministerio_shekinah_db";
 
@@ -35,8 +35,9 @@ string GetConnectionString(string url)
     {
         var uri = new Uri(url);
         var userInfo = uri.UserInfo.Split(':');
+        int dbPort = uri.Port > 0 ? uri.Port : 5432; // Garante que a porta nunca seja -1 ou 0
 
-        return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        return $"Host={uri.Host};Port={dbPort};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
     }
     return url;
 }
@@ -49,7 +50,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco protegido com try-catch para evitar crash (status 139) e registar o erro exato nos logs
+// Bloco para aplicar as migrações automaticamente no PostgreSQL da nuvem
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -62,7 +63,6 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine($"--> ERRO CRÍTICO NA MIGRAÇÃO: {ex.Message}");
-        Console.WriteLine(ex.ToString());
     }
 }
 
@@ -90,7 +90,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Endpoint em tempo real para as Velas Virtuais
+// Endpoint em tempo real para das Velas Virtuais
 app.MapHub<VelaHub>("/velaHub");
 
 app.Run();
