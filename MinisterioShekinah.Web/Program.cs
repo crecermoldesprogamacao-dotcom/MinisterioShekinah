@@ -3,6 +3,9 @@ using MinisterioShekinah.Web.Data;
 using MinisterioShekinah.Web.Hubs;
 using MinisterioShekinah.Web.Models;
 
+// CORREÇÃO CRUCIAL: Desativa a restrição estricta de Kind=Local/UTC nas datas do PostgreSQL
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurar a porta dinâmica para o Docker / Render
@@ -58,7 +61,6 @@ using (var scope = app.Services.CreateScope())
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
 
-        // Garante as tabelas e ajusta o tipo de data da Vela Virtual para timestamp sem zona (evita conflitos)
         context.Database.ExecuteSqlRaw(@"
             -- 1. Musicas
             CREATE TABLE IF NOT EXISTS ""Musicas"" (
@@ -72,17 +74,10 @@ using (var scope = app.Services.CreateScope())
                 ""MomentoLiturgico"" TEXT
             );
 
-            DO $$ 
-            BEGIN 
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Musicas' AND column_name = 'MomentoLiturgico') THEN
-                    ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
-                END IF;
-            END $$;
-
             CREATE SEQUENCE IF NOT EXISTS ""Musicas_Id_seq"";
             ALTER TABLE ""Musicas"" ALTER COLUMN ""Id"" SET DEFAULT nextval('""Musicas_Id_seq""');
 
-            -- 2. VelasVirtuais (Garante os campos corretos e tipos de data compatíveis)
+            -- 2. VelasVirtuais
             CREATE TABLE IF NOT EXISTS ""VelasVirtuais"" (
                 ""Id"" SERIAL PRIMARY KEY,
                 ""Nome"" TEXT,
@@ -94,7 +89,7 @@ using (var scope = app.Services.CreateScope())
             );
         ");
 
-        Console.WriteLine("--> Tabelas e tipos de dados verificados com sucesso!");
+        Console.WriteLine("--> Tabelas e compatibilidade de datas configuradas com sucesso!");
     }
     catch (Exception ex)
     {
