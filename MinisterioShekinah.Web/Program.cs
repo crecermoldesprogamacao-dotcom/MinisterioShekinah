@@ -50,7 +50,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco seguro para garantir a criação do banco e adicionar a coluna MomentoLiturgico automaticamente
+// Bloco de segurança definitivo para garantir a coluna MomentoLiturgico
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -58,31 +58,33 @@ using (var scope = app.Services.CreateScope())
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
 
-        context.Database.EnsureCreated();
-
-        // Garante que a coluna MomentoLiturgico existe fisicamente na tabela (evita o erro 42703)
+        // Executa o SQL diretamente para garantir que a coluna existe na tabela (tanto 'Musicas' como 'musicas')
         context.Database.ExecuteSqlRaw(@"
             DO $$ 
             BEGIN 
-                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'Musicas') THEN
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Musicas' AND column_name = 'MomentoLiturgico') THEN
-                        ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
-                    END IF;
+                -- Tabela com 'M' maiúsculo
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'Musicas' AND column_name = 'MomentoLiturgico'
+                ) THEN
+                    ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
                 END IF;
 
-                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'musicas') THEN
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'musicas' AND column_name = 'MomentoLiturgico') THEN
-                        ALTER TABLE musicas ADD COLUMN ""MomentoLiturgico"" TEXT;
-                    END IF;
+                -- Tabela em minúsculas
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'musicas' AND column_name = 'MomentoLiturgico'
+                ) THEN
+                    ALTER TABLE musicas ADD COLUMN ""MomentoLiturgico"" TEXT;
                 END IF;
             END $$;
         ");
 
-        Console.WriteLine("--> Base de dados e coluna MomentoLiturgico garantidas com sucesso!");
+        Console.WriteLine("--> Coluna MomentoLiturgico verificada e criada com sucesso na nuvem!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> ERRO CRÍTICO NA ATUALIZAÇÃO DO BANCO: {ex.Message}");
+        Console.WriteLine($"--> AVISO AO CRIAR COLUNA: {ex.Message}");
     }
 }
 
