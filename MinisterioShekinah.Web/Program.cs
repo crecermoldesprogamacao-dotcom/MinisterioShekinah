@@ -50,34 +50,19 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco para aplicar migrações e garantir que a coluna MomentoLiturgico existe com segurança
+// Bloco seguro para garantir a criação do banco sem falhas de migração
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
-        context.Database.Migrate();
-
-        // Força a criação da coluna cobrindo tanto o nome com aspas (case-sensitive) como minúsculo
-        context.Database.ExecuteSqlRaw(@"
-            DO $$ 
-            BEGIN 
-                -- Tenta adicionar com aspas duplas (compatível com EF Core no PostgreSQL)
-                IF NOT EXISTS (
-                    SELECT 1 FROM information_schema.columns 
-                    WHERE table_name = 'Musicas' AND column_name = 'MomentoLiturgico'
-                ) THEN
-                    ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
-                END IF;
-            END $$;
-        ");
-
-        Console.WriteLine("--> Base de dados e coluna MomentoLiturgico verificadas com sucesso!");
+        context.Database.EnsureCreated();
+        Console.WriteLine("--> Banco de dados verificado e conectado com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> ERRO CRÍTICO NA MIGRAÇÃO: {ex.Message}");
+        Console.WriteLine($"--> ERRO CRÍTICO NA CONEXÃO DO BANCO: {ex.Message}");
     }
 }
 
