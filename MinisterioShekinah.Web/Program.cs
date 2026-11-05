@@ -25,29 +25,24 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Função para converter a URL do Render (postgres://) no formato do Npgsql
-string GetConnectionString()
+// DEFINIÇÃO DIRETA DA CONEXÃO DO RENDER PARA EVITAR FALHAS NO DOCKER
+// Cole a sua "Internal Database URL" do Render dentro das aspas abaixo:
+string rawDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+                        ?? "postgresql://ministerio_shekinah_db_user:M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB@dpg-dbm7d6l6e07s73bcmjq0-a/ministerio_shekinah_db";
+
+string GetConnectionString(string url)
 {
-    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-    if (string.IsNullOrEmpty(databaseUrl))
+    if (url.StartsWith("postgres://") || url.StartsWith("postgresql://"))
     {
-        return builder.Configuration.GetConnectionString("DefaultConnection")
-               ?? throw new InvalidOperationException("String de conexão não encontrada.");
-    }
-
-    if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
-    {
-        var uri = new Uri(databaseUrl);
+        var uri = new Uri(url);
         var userInfo = uri.UserInfo.Split(':');
 
         return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
     }
-
-    return databaseUrl;
+    return url;
 }
 
-var connectionString = GetConnectionString();
+var connectionString = GetConnectionString(rawDatabaseUrl);
 
 // Configuração do banco de dados PostgreSQL com DbContext (Npgsql)
 builder.Services.AddDbContext<ShekinahContext>(options =>
