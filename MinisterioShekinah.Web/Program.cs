@@ -25,8 +25,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// DEFINIÇÃO DIRETA DA CONEXÃO DO RENDER PARA EVITAR FALHAS NO DOCKER
-// Cole a sua "Internal Database URL" do Render dentro das aspas abaixo:
+// Ler a string de conexão do Render
 string rawDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
                         ?? "postgresql://ministerio_shekinah_db_user:M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB@dpg-dbm7d6l6e07s73bcmjq0-a/ministerio_shekinah_db";
 
@@ -50,12 +49,21 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco para aplicar as migrações automaticamente no PostgreSQL da nuvem
+// Bloco protegido com try-catch para evitar crash (status 139) e registar o erro exato nos logs
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ShekinahContext>();
-    context.Database.Migrate();
+    try
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ShekinahContext>();
+        context.Database.Migrate();
+        Console.WriteLine("--> Migrações aplicadas com sucesso ao PostgreSQL!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"--> ERRO CRÍTICO NA MIGRAÇÃO: {ex.Message}");
+        Console.WriteLine(ex.ToString());
+    }
 }
 
 // 3. Configuração do pipeline de requisições HTTP
