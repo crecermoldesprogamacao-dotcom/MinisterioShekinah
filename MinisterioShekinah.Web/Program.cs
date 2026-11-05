@@ -3,7 +3,7 @@ using MinisterioShekinah.Web.Data;
 using MinisterioShekinah.Web.Hubs;
 using MinisterioShekinah.Web.Models;
 
-// CORREÇÃO CRUCIAL: Desativa a restrição estricta de Kind=Local/UTC nas datas do PostgreSQL
+// Mantém a compatibilidade de datas
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,7 +53,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco de autoverificação e correção das tabelas na nuvem
+// Bloco de autoverificação e correção definitiva das tabelas e tipos na nuvem
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -87,9 +87,18 @@ using (var scope = app.Services.CreateScope())
                 ""Ativa"" BOOLEAN DEFAULT TRUE,
                 ""CorVela"" TEXT
             );
+
+            -- CORREÇÃO DE SEGURANÇA: Garante que a coluna 'Ativa' seja sempre BOOLEAN, mesmo que tenha sido criada como int/outro tipo antes
+            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Ativa"" TYPE BOOLEAN USING 
+                CASE 
+                    WHEN ""Ativa""::text = '0' THEN FALSE 
+                    WHEN ""Ativa""::text = '1' THEN TRUE 
+                    ELSE COALESCE(""Ativa""::text::boolean, TRUE) 
+                END;
+            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Ativa"" SET DEFAULT TRUE;
         ");
 
-        Console.WriteLine("--> Tabelas e compatibilidade de datas configuradas com sucesso!");
+        Console.WriteLine("--> Tabelas e tipos de dados corrigidos na nuvem com sucesso!");
     }
     catch (Exception ex)
     {
