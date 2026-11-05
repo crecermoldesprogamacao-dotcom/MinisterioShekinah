@@ -35,7 +35,7 @@ string GetConnectionString(string url)
     {
         var uri = new Uri(url);
         var userInfo = uri.UserInfo.Split(':');
-        int dbPort = uri.Port > 0 ? uri.Port : 5432; // Garante que a porta nunca seja -1 ou 0
+        int dbPort = uri.Port > 0 ? uri.Port : 5432;
 
         return $"Host={uri.Host};Port={dbPort};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
     }
@@ -50,7 +50,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco para aplicar as migrações automaticamente no PostgreSQL da nuvem
+// Bloco para aplicar migrações e garantir que a coluna MomentoLiturgico existe
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -58,7 +58,18 @@ using (var scope = app.Services.CreateScope())
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
         context.Database.Migrate();
-        Console.WriteLine("--> Migrações aplicadas com sucesso ao PostgreSQL!");
+
+        // Garante que a coluna MomentoLiturgico existe na tabela Musicas (evita erro 42703)
+        context.Database.ExecuteSqlRaw(@"
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Musicas' and column_name='MomentoLiturgico') THEN
+                    ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
+                END IF;
+            END $$;
+        ");
+
+        Console.WriteLine("--> Base de dados atualizada e coluna MomentoLiturgico garantida com sucesso!");
     }
     catch (Exception ex)
     {
@@ -90,7 +101,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Endpoint em tempo real para das Velas Virtuais
+// Endpoint em tempo real para as Velas Virtuais
 app.MapHub<VelaHub>("/velaHub");
 
 app.Run();
