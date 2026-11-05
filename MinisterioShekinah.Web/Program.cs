@@ -50,7 +50,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco para aplicar migrações e garantir que a coluna MomentoLiturgico existe
+// Bloco para aplicar migrações e garantir que a coluna MomentoLiturgico existe com segurança
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -59,17 +59,21 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ShekinahContext>();
         context.Database.Migrate();
 
-        // Garante que a coluna MomentoLiturgico existe na tabela Musicas (evita erro 42703)
+        // Força a criação da coluna cobrindo tanto o nome com aspas (case-sensitive) como minúsculo
         context.Database.ExecuteSqlRaw(@"
             DO $$ 
             BEGIN 
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Musicas' and column_name='MomentoLiturgico') THEN
+                -- Tenta adicionar com aspas duplas (compatível com EF Core no PostgreSQL)
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'Musicas' AND column_name = 'MomentoLiturgico'
+                ) THEN
                     ALTER TABLE ""Musicas"" ADD COLUMN ""MomentoLiturgico"" TEXT;
                 END IF;
             END $$;
         ");
 
-        Console.WriteLine("--> Base de dados atualizada e coluna MomentoLiturgico garantida com sucesso!");
+        Console.WriteLine("--> Base de dados e coluna MomentoLiturgico verificadas com sucesso!");
     }
     catch (Exception ex)
     {
