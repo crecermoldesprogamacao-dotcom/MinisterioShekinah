@@ -53,7 +53,7 @@ builder.Services.AddDbContext<ShekinahContext>(options =>
 
 var app = builder.Build();
 
-// Bloco de autoverificação e correção definitiva das tabelas e tipos na nuvem
+// Bloco de autoverificação e correção estrita de tipos na nuvem
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -88,7 +88,7 @@ using (var scope = app.Services.CreateScope())
                 ""CorVela"" TEXT
             );
 
-            -- CORREÇÃO DE SEGURANÇA: Garante que a coluna 'Ativa' seja sempre BOOLEAN, mesmo que tenha sido criada como int/outro tipo antes
+            -- CORREÇÃO DE TIPOS: Converte colunas antigas para os tipos corretos na base de dados existente
             ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Ativa"" TYPE BOOLEAN USING 
                 CASE 
                     WHEN ""Ativa""::text = '0' THEN FALSE 
@@ -96,9 +96,21 @@ using (var scope = app.Services.CreateScope())
                     ELSE COALESCE(""Ativa""::text::boolean, TRUE) 
                 END;
             ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Ativa"" SET DEFAULT TRUE;
+
+            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""DataAcesa"" TYPE TIMESTAMP WITHOUT TIME ZONE USING 
+                CASE 
+                    WHEN ""DataAcesa"" IS NULL OR ""DataAcesa""::text = '' THEN CURRENT_TIMESTAMP 
+                    ELSE ""DataAcesa""::timestamp without time zone 
+                END;
+
+            ALTER TABLE ""VelasVirtuais"" ALTER COLUMN ""Data"" TYPE TIMESTAMP WITHOUT TIME ZONE USING 
+                CASE 
+                    WHEN ""Data"" IS NULL OR ""Data""::text = '' THEN CURRENT_TIMESTAMP 
+                    ELSE ""Data""::timestamp without time zone 
+                END;
         ");
 
-        Console.WriteLine("--> Tabelas e tipos de dados corrigidos na nuvem com sucesso!");
+        Console.WriteLine("--> Tabelas e tipos de dados corrigidos com sucesso na nuvem!");
     }
     catch (Exception ex)
     {
