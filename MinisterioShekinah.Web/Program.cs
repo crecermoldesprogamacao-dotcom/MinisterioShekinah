@@ -21,19 +21,25 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Configuração do banco de dados SQLite com DbContext
+// Configuração inteligente do Banco de Dados:
+// Se estiver no Render, ele lê a variável de ambiente; se estiver no seu PC, usa o appsettings.json
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
+                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Configuração do banco de dados PostgreSQL com DbContext
 builder.Services.AddDbContext<ShekinahContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Bloco para garantir que a base de dados e as tabelas existem
+// Bloco para garantir que a base de dados e as tabelas existem na nuvem
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ShekinahContext>();
-    // Garante que todas as tabelas existem na base de dados
-    context.Database.EnsureCreated();
+
+    // Para PostgreSQL no Render, o Migrate() garante a criação correta das tabelas
+    context.Database.Migrate();
 }
 
 // 3. Configuração do pipeline de requisições HTTP
