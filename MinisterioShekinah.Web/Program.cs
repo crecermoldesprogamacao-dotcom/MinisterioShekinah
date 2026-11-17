@@ -74,4 +74,6 @@ app.MapControllerRoute(
 // Endpoint em tempo real para as Velas Virtuais
 app.MapHub<VelaHub>("/velaHub");
 
-app.Run();
+// Configuração da porta dinâmica para o Render e ambiente de produção
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run($"http://0.0.0.0:{port}");
