@@ -25,9 +25,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// 2. Configuração do banco de dados PostgreSQL (Supabase) com DbContext
+// 2. Configuração do banco de dados PostgreSQL (Supabase / DATABASE_URL)
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
+                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ShekinahContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
