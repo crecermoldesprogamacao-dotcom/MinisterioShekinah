@@ -25,16 +25,15 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// 2. Configuração do banco de dados PostgreSQL (Supabase / DATABASE_URL)
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// 2. Configuração direta do banco de dados PostgreSQL do Render
+var connectionString = "postgresql://postgres.tqwcyqgychyhpcygwroo:MaRiAnA120580%23@aws-1-us-west-2.pooler.supabase.com:5432/postgres";
 
 builder.Services.AddDbContext<ShekinahContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Bloco de verificação e criação automática do banco de dados no Supabase
+// Bloco de verificação e criação automática do banco de dados
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -42,9 +41,8 @@ using (var scope = app.Services.CreateScope())
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
 
-        // Cria as tabelas no PostgreSQL se ainda não existirem
         context.Database.EnsureCreated();
-        Console.WriteLine("--> Banco de dados PostgreSQL (Supabase) verificado e criado com sucesso!");
+        Console.WriteLine("--> Banco de dados PostgreSQL verificado e criado com sucesso!");
     }
     catch (Exception ex)
     {
