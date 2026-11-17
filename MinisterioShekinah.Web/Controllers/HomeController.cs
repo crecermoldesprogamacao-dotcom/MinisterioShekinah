@@ -93,7 +93,7 @@ namespace MinisterioShekinah.Web.Controllers
                     NomeFiel = nomeFiel,
                     Intencao = intencao,
                     CorVela = string.IsNullOrEmpty(corVela) ? "branco" : corVela,
-                    DataAcesa = DateTime.Now,
+                    DataAcesa = DateTime.UtcNow,
                     Ativa = true
                 };
 
