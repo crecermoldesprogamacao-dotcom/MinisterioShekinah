@@ -26,7 +26,7 @@ builder.Services.AddSession(options =>
 });
 
 // 2. Configuração direta do banco de dados PostgreSQL do Render
-var connectionString = "postgresql://postgres.tqwcyqgychyhpcygwroo:MaRiAnA120580%23@aws-1-us-west-2.pooler.supabase.com:5432/postgres";
+var connectionString = "postgresql://ministerio_shekinah_db_user:M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB@dpg-dbm7d6l6e07s73bcmjq0-a/ministerio_shekinah_db";
 
 builder.Services.AddDbContext<ShekinahContext>(options =>
     options.UseNpgsql(connectionString));
