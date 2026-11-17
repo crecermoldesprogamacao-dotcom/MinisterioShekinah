@@ -25,8 +25,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// 2. Configuração direta do banco de dados PostgreSQL do Render
-var connectionString = "postgresql://ministerio_shekinah_db_user:M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB@dpg-dbm7d6l6e07s73bcmjq0-a/ministerio_shekinah_db";
+// 2. Configuração direta do banco de dados PostgreSQL do Render (Formato Chave=Valor)
+var connectionString = "Host=dpg-dbm7d6l6e07s73bcmjq0-a;Database=ministerio_shekinah_db;Username=ministerio_shekinah_db_user;Password=M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB;Port=5432;SSL Mode=Prefer;Trust Server Certificate=true";
 
 builder.Services.AddDbContext<ShekinahContext>(options =>
     options.UseNpgsql(connectionString));
