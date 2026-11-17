@@ -25,26 +25,27 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// 2. Configuração do banco de dados local SQLite com DbContext
+// 2. Configuração do banco de dados PostgreSQL (Supabase) com DbContext
 builder.Services.AddDbContext<ShekinahContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Bloco de criação automática do banco SQLite local
+// Bloco de verificação e criação automática do banco de dados no Supabase
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
-        // Cria o arquivo ministerioshekinah.db e todas as tabelas se ainda não existirem
+
+        // Cria as tabelas no PostgreSQL se ainda não existirem
         context.Database.EnsureCreated();
-        Console.WriteLine("--> Banco de dados SQLite local verificado e criado com sucesso!");
+        Console.WriteLine("--> Banco de dados PostgreSQL (Supabase) verificado e criado com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> AVISO NA CRIAÇÃO DO BANCO LOCAL: {ex.Message}");
+        Console.WriteLine($"--> AVISO NA CRIAÇÃO DO BANCO POSTGRESQL: {ex.Message}");
     }
 }
 
@@ -60,6 +61,7 @@ else
 }
 
 app.UseStaticFiles();
+
 app.UseRouting();
 
 // Ativar o middleware de Sessão
