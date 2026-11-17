@@ -2,18 +2,15 @@ using Microsoft.EntityFrameworkCore;
 using MinisterioShekinah.Web.Data;
 using MinisterioShekinah.Web.Hubs;
 using MinisterioShekinah.Web.Models;
-
-// Mantém a compatibilidade de datas
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+using MinisterioShekinah.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar a porta dinâmica para o Docker / Render
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
 // 1. Adicionar os serviços necessários ao container do ASP.NET Core
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<CifraAiService>();
+builder.Services.AddHttpClient<LiturgiaService>();
+builder.Services.AddScoped<IAEngineService>();
 builder.Services.AddAuthorization();
 
 // Adicionar serviço em tempo real do SignalR
@@ -28,72 +25,26 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Ler a string de conexão do Render com tratamento seguro da porta
-string rawDatabaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
-                        ?? "postgresql://ministerio_shekinah_db_user:M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB@dpg-dbm7d6l6e07s73bcmjq0-a/ministerio_shekinah_db";
-
-string GetConnectionString(string url)
-{
-    if (url.StartsWith("postgres://") || url.StartsWith("postgresql://"))
-    {
-        var uri = new Uri(url);
-        var userInfo = uri.UserInfo.Split(':');
-        int dbPort = uri.Port > 0 ? uri.Port : 5432;
-
-        return $"Host={uri.Host};Port={dbPort};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-    }
-    return url;
-}
-
-var connectionString = GetConnectionString(rawDatabaseUrl);
-
-// Configuração do banco de dados PostgreSQL com DbContext (Npgsql)
+// 2. Configuração do banco de dados local SQLite com DbContext
 builder.Services.AddDbContext<ShekinahContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Bloco de autoverificação e correção das tabelas na nuvem
+// Bloco de criação automática do banco SQLite local
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
-
-        context.Database.ExecuteSqlRaw(@"
-            -- 1. Musicas
-            CREATE TABLE IF NOT EXISTS ""Musicas"" (
-                ""Id"" SERIAL PRIMARY KEY,
-                ""Titulo"" TEXT,
-                ""Artista"" TEXT,
-                ""TomOriginal"" TEXT,
-                ""Capotraste"" TEXT,
-                ""Cifra"" TEXT,
-                ""PartituraUrl"" TEXT,
-                ""MomentoLiturgico"" TEXT
-            );
-
-            CREATE SEQUENCE IF NOT EXISTS ""Musicas_Id_seq"";
-            ALTER TABLE ""Musicas"" ALTER COLUMN ""Id"" SET DEFAULT nextval('""Musicas_Id_seq""');
-
-            -- 2. VelasVirtuais (Recria limpo para garantir tipos corretos e evitar conflitos de TEXT vs TIMESTAMP)
-            DROP TABLE IF EXISTS ""VelasVirtuais"" CASCADE;
-            CREATE TABLE ""VelasVirtuais"" (
-                ""Id"" SERIAL PRIMARY KEY,
-                ""NomeFiel"" TEXT,
-                ""Intencao"" TEXT,
-                ""DataAcesa"" TIMESTAMP WITHOUT TIME ZONE,
-                ""Ativa"" BOOLEAN DEFAULT TRUE,
-                ""CorVela"" TEXT
-            );
-        ");
-
-        Console.WriteLine("--> Tabelas recriadas e corrigidas com sucesso na nuvem!");
+        // Cria o arquivo ministerioshekinah.db e todas as tabelas se ainda não existirem
+        context.Database.EnsureCreated();
+        Console.WriteLine("--> Banco de dados SQLite local verificado e criado com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> AVISO NA ATUALIZAÇÃO DO BANCO: {ex.Message}");
+        Console.WriteLine($"--> AVISO NA CRIAÇÃO DO BANCO LOCAL: {ex.Message}");
     }
 }
 

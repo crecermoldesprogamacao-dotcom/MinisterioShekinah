@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Editar Música";
 }
+
 <div class="container my-5" style="max-width: 800px;">
     <div class="card bg-dark border-warning shadow-lg p-4 rounded-4">
         <div class="card-body">
@@ -33,7 +34,6 @@
                     </div>
                 </div>
 
-                <!-- Campo do Momento Litúrgico na Edição -->
                 <div class="mb-3">
                     <label asp-for="MomentoLiturgico" class="form-label text-warning fw-bold">Momento Litúrgico / Canto</label>
                     <select asp-for="MomentoLiturgico" class="form-select bg-black text-light border-secondary">
@@ -54,7 +54,13 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Cifra" class="form-label text-warning fw-bold">Cifra com Acordes entre Colchetes</label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label asp-for="Cifra" class="form-label text-warning fw-bold mb-0">Cifra com Acordes entre Colchetes</label>
+                        <button type="button" id="btnOrganizarIa" class="btn btn-sm btn-outline-warning fw-bold">
+                            ✨ Organizar com IA
+                        </button>
+                    </div>
+                    <div id="statusIa" class="small mb-2" style="display: none;"></div>
                     <textarea asp-for="Cifra" rows="10" class="form-control bg-black text-light border-secondary font-monospace" required></textarea>
                     <small class="text-muted">Dica: Coloque os acordes entre parênteses rectos (ex: `[G]`, `[D/F#]`) para transposição automática.</small>
                     <span asp-validation-for="Cifra" class="text-danger"></span>
@@ -87,3 +93,76 @@
         box-shadow: 0 0 0 0.25rem rgba(223, 178, 53, 0.25);
     }
 </style>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnOrganizarIa').addEventListener('click', async function() {
+            const btn = this;
+            const statusDiv = document.getElementById('statusIa');
+            const tituloInput = document.getElementById('Titulo');
+            const cifraInput = document.getElementById('Cifra');
+            const tomInput = document.getElementById('TomOriginal');
+            const momentoSelect = document.getElementById('MomentoLiturgico');
+
+            if (!cifraInput.value.trim()) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'small mb-2 text-danger';
+                statusDiv.textContent = 'Cole a letra ou cifra antes de clicar em Organizar com IA.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> A organizar...';
+            statusDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('@Url.Action("OrganizarComIa", "Musicas")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        titulo: tituloInput.value,
+                        cifra: cifraInput.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.erro || 'Erro ao processar a cifra.');
+                }
+
+                if (data.cifraFormatada) cifraInput.value = data.cifraFormatada;
+                if (data.tomDetectado) tomInput.value = data.tomDetectado;
+
+                if (data.momentoSugerido && data.momentoSugerido !== 'Outro') {
+                    const mapaMomentos = {
+                        'Glória': 'Hino de Louvor (Glória)',
+                        'Salmo': 'Salmo Responsorial',
+                        'Ação de Graças': 'Pós-Comunhão',
+                        'Final': 'Final / Envio',
+                        'Adoração': 'Adoração / Louvor Geral'
+                    };
+                    const valorAlvo = mapaMomentos[data.momentoSugerido] || data.momentoSugerido;
+
+                    for (let i = 0; i < momentoSelect.options.length; i++) {
+                        if (momentoSelect.options[i].value === valorAlvo) {
+                            momentoSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'small mb-2 text-success';
+                statusDiv.textContent = `✨ Cifra organizada! Tom detetado: ${data.tomDetectado} | Momento sugerido: ${data.momentoSugerido}`;
+            } catch (error) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'small mb-2 text-danger';
+                statusDiv.textContent = 'Erro: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✨ Organizar com IA';
+            }
+        });
+    </script>
+}

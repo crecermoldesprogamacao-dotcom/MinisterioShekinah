@@ -7,21 +7,74 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="text-warning fw-bold mb-1">🕊️ Repertório da Santa Missa / Evento</h1>
-            <p class="text-light opacity-75 m-0">Selecione as músicas na ordem da celebração para gerar o PDF unificado.</p>
+            <p class="text-light opacity-75 m-0">Leitura automática da Liturgia Diária, Salmo Responsorial e sugestão por IA.</p>
         </div>
-        <a asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold">Voltar</a>
+        <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold">Voltar</a>
     </div>
 
-    <form asp-action="ExportarPdfMissa" method="post">
-        <div class="card bg-dark border-warning shadow-lg p-4 mb-4">
-            <div class="mb-3">
-                <label class="form-label text-warning fw-bold">Nome da Celebração / Evento:</label>
-                <input type="text" name="NomeEvento" class="form-control bg-black text-light border-warning" placeholder="Ex: Santa Missa de Domingo - 19h" required />
+    <!-- Card Assistente de Liturgia Diária -->
+    <div class="card bg-black border-warning shadow-lg p-4 mb-4 rounded-4">
+        <div class="row align-items-end g-2">
+            <div class="col-md-4">
+                <label for="dataMissa" class="form-label text-warning fw-bold">
+                    <i class="bi bi-calendar-event me-1"></i> Data da Celebração:
+                </label>
+                <input type="date" id="dataMissa" class="form-control bg-dark text-light border-warning" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-3">
+                <button type="button" id="btnProximoDomingo" class="btn btn-outline-warning w-100 py-2 fw-semibold">
+                    📅 Próximo Domingo
+                </button>
+            </div>
+            <div class="col-md-5">
+                <button type="button" id="btnMontarLiturgia" class="btn btn-warning text-dark fw-bold w-100 py-2">
+                    ✨ Montar com Liturgia do Dia
+                </button>
+            </div>
+        </div>
+
+        <!-- Painel de Resumo da Liturgia -->
+        <div id="painelLiturgia" class="mt-3 pt-3 border-top border-secondary" style="display: none;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <span id="liturgiaNome" class="fw-bold text-light fs-6"></span>
+                <span id="liturgiaCorBadge" class="badge px-3 py-2"></span>
             </div>
 
-            <hr class="border-secondary my-4" />
+            <div id="avisoQuaresma" class="alert alert-info py-2 px-3 small mb-2" style="display: none;">
+                <i class="bi bi-info-circle-fill me-1"></i> <strong>Tempo da Quaresma:</strong> O <em>Glória</em> e o <em>Aleluia</em> foram omitidos conforme as normas litúrgicas.
+            </div>
 
-            <h5 class="text-warning mb-3">Selecione as músicas do repertório:</h5>
+            <div id="salmoBox" class="p-3 rounded bg-dark border-start border-4 border-warning small text-light mb-2" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="text-warning">Salmo Responsorial do Dia:</strong>
+                    <span id="salmoStatusBadge" class="badge"></span>
+                </div>
+                <div class="fst-italic fw-bold mb-1" id="salmoTexto"></div>
+                <details class="mt-1">
+                    <summary class="text-warning" style="cursor: pointer;">Ver estrofes completas do Salmo</summary>
+                    <pre id="salmoCompletoPre" class="text-light mt-2 mb-0" style="white-space: pre-wrap; font-family: inherit;"></pre>
+                </details>
+            </div>
+
+            <div id="liturgiaAviso" class="small text-success fw-semibold"></div>
+        </div>
+    </div>
+
+    <form id="formMissal" asp-action="ExportarPdfMissa" method="post">
+        <input type="hidden" id="hiddenCorLiturgica" name="CorLiturgica" />
+        <input type="hidden" id="hiddenSalmoRefrao" name="SalmoRefrao" />
+        <input type="hidden" id="hiddenSalmoTexto" name="SalmoTexto" />
+
+        <div class="card bg-dark border-warning shadow-lg p-4 mb-4 rounded-4">
+            <div class="mb-3">
+                <label class="form-label text-warning fw-bold">Nome da Celebração / Evento:</label>
+                <input type="text" id="NomeEvento" name="NomeEvento" class="form-control bg-black text-light border-warning" placeholder="Ex: Santa Missa de Domingo - 19h" required />
+            </div>
+            <hr class="border-secondary my-4" />
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-warning mb-0">Músicas na Ordem da Celebração:</h5>
+                <button type="button" id="btnLimparSelecao" class="btn btn-sm btn-outline-secondary">Desmarcar Todas</button>
+            </div>
             <div class="table-responsive">
                 <table class="table table-dark table-hover align-middle">
                     <thead>
@@ -37,7 +90,7 @@
                         {
                             <tr>
                                 <td class="text-center">
-                                    <input type="checkbox" name="musicasIds" value="@musica.Id" class="form-check-input border-warning" />
+                                    <input type="checkbox" name="musicasIds" value="@musica.Id" class="form-check-input border-warning musica-checkbox" />
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary">@(string.IsNullOrEmpty(musica.MomentoLiturgico) ? "Geral" : musica.MomentoLiturgico)</span>
@@ -51,10 +104,125 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-end mb-5">
-            <button type="submit" class="btn btn-warning text-dark fw-bold px-4 py-2 shadow-lg">
-                <i class="bi bi-file-earmark-pdf-fill me-2"></i> Gerar PDF da Santa Missa
+        <div class="d-flex flex-wrap justify-content-end gap-2 mb-5">
+            <button type="submit" formaction="@Url.Action("EnsaioInteligente", "Musicas")" class="btn btn-outline-info fw-bold px-3 py-2">
+                <i class="bi bi-journal-check me-1"></i> Relatório de Ensaio
+            </button>
+            <button type="submit" formaction="@Url.Action("TeleprompterMissa", "Musicas")" class="btn btn-outline-light fw-bold px-3 py-2">
+                <i class="bi bi-display me-1"></i> Teleprompter
+            </button>
+            <button type="submit" formaction="@Url.Action("ModoMusico", "Musicas")" class="btn btn-outline-warning fw-bold px-3 py-2">
+                <i class="bi bi-music-note-list me-1"></i> Modo Altar
+            </button>
+            <button type="submit" class="btn btn-warning text-dark fw-bold px-3 py-2 shadow-lg">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Gerar PDF
             </button>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        async function carregarLiturgia() {
+            const btn = document.getElementById('btnMontarLiturgia');
+            const dataVal = document.getElementById('dataMissa').value;
+            const painel = document.getElementById('painelLiturgia');
+            const liturgiaNome = document.getElementById('liturgiaNome');
+            const liturgiaCorBadge = document.getElementById('liturgiaCorBadge');
+            const avisoQuaresma = document.getElementById('avisoQuaresma');
+            const salmoBox = document.getElementById('salmoBox');
+            const salmoTexto = document.getElementById('salmoTexto');
+            const salmoCompletoPre = document.getElementById('salmoCompletoPre');
+            const salmoStatusBadge = document.getElementById('salmoStatusBadge');
+            const liturgiaAviso = document.getElementById('liturgiaAviso');
+            const nomeEventoInput = document.getElementById('NomeEvento');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> A consultar Liturgia...';
+
+            try {
+                const response = await fetch(`@Url.Action("SugerirPorLiturgiaAjax", "Musicas")?data=${encodeURIComponent(dataVal)}`);
+                const dados = await response.json();
+
+                painel.style.display = 'block';
+                liturgiaNome.textContent = `${dados.dataFormatada} — ${dados.liturgiaTitulo}`;
+
+                const corLower = (dados.cor || '').toLowerCase();
+                liturgiaCorBadge.textContent = `Cor: ${dados.cor}`;
+                liturgiaCorBadge.className = 'badge px-3 py-2 ';
+                if (corLower.includes('verde')) liturgiaCorBadge.className += 'bg-success';
+                else if (corLower.includes('roxo')) liturgiaCorBadge.className += 'bg-primary';
+                else if (corLower.includes('vermelho')) liturgiaCorBadge.className += 'bg-danger';
+                else liturgiaCorBadge.className += 'bg-light text-dark';
+
+                avisoQuaresma.style.display = dados.ehQuaresma ? 'block' : 'none';
+
+                if (dados.salmoRefrao) {
+                    salmoBox.style.display = 'block';
+                    salmoTexto.textContent = dados.salmoRefrao;
+                    salmoCompletoPre.textContent = dados.salmoTexto || '';
+
+                    if (dados.salmoCadastradoTitulo) {
+                        salmoStatusBadge.className = 'badge bg-success';
+                        salmoStatusBadge.textContent = `Melodia encontrada: ${dados.salmoCadastradoTitulo}`;
+                    } else {
+                        salmoStatusBadge.className = 'badge bg-secondary';
+                        salmoStatusBadge.textContent = 'Sem melodia cifrada no banco (incluído no PDF)';
+                    }
+                } else {
+                    salmoBox.style.display = 'none';
+                }
+
+                document.getElementById('hiddenCorLiturgica').value = dados.cor || '';
+                document.getElementById('hiddenSalmoRefrao').value = dados.salmoRefrao || '';
+                document.getElementById('hiddenSalmoTexto').value = dados.salmoTexto || '';
+                nomeEventoInput.value = `${dados.liturgiaTitulo} (${dados.dataFormatada})`;
+
+                        const ids = dados.idsSugeridos || [];
+                let marcadas = 0;
+                document.querySelectorAll('.musica-checkbox').forEach(cb => {
+                    const idMusica = parseInt(cb.value);
+                    if (ids.includes(idMusica)) {
+                        cb.checked = true;
+                        cb.closest('tr').classList.add('table-active');
+                        marcadas++;
+                        } else {
+                        cb.checked = false;
+                        cb.closest('tr').classList.remove('table-active');
+                            }
+                        });
+
+                        liturgiaAviso.className = 'small text-success fw-semibold';
+                liturgiaAviso.textContent = `✨ A IA selecionou ${marcadas} canto(s) alinhados com a liturgia e o Evangelho deste dia!`;
+                } catch (err) {
+                painel.style.display = 'block';
+                liturgiaAviso.className = 'small text-danger fw-semibold';
+                liturgiaAviso.textContent = 'Não foi possível consultar a liturgia online neste momento.';
+                } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✨ Montar com Liturgia do Dia';
+                    }
+                }
+
+                document.getElementById('btnProximoDomingo').addEventListener('click', function () {
+            const hoje = new Date();
+            const diasAteDomingo = (7 - hoje.getDay()) % 7 || 7;
+            const proximoDomingo = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + diasAteDomingo);
+            const yyyy = proximoDomingo.getFullYear();
+            const mm = String(proximoDomingo.getMonth() + 1).padStart(2, '0');
+            const dd = String(proximoDomingo.getDate()).padStart(2, '0');
+            document.getElementById('dataMissa').value = `${yyyy}-${mm}-${dd}`;
+            carregarLiturgia();
+                });
+
+        document.getElementById('btnLimparSelecao').addEventListener('click', function () {
+                    document.querySelectorAll('.musica-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.closest('tr').classList.remove('table-active');
+                    });
+                });
+
+        document.getElementById('btnMontarLiturgia').addEventListener('click', carregarLiturgia);
+                document.addEventListener('DOMContentLoaded', carregarLiturgia);
+    </script>
+}

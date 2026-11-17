@@ -2,9 +2,7 @@
 @{
     ViewData["Title"] = "Repertório & Cifras - Ministério Shekinah";
 }
-
 <div class="container my-5 pb-5">
-    <!-- Cabeçalho com o Botão de Adicionar Nova Música e Modo Músico -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 text-center text-md-start">
         <div>
             <h1 class="display-4 text-warning fw-bold mb-1">Repertório & Cifras</h1>
@@ -14,39 +12,46 @@
             <a asp-controller="Musicas" asp-action="Criar" class="btn btn-warning text-dark fw-bold px-4 py-2 shadow rounded-pill">
                 <i class="bi bi-plus-circle-fill me-2"></i> Adicionar Nova Música
             </a>
+            <a asp-controller="Musicas" asp-action="GerarMissal" class="btn btn-outline-warning fw-bold px-4 py-2 shadow rounded-pill">
+                <i class="bi bi-file-earmark-text me-2"></i> Gerar Missal
+            </a>
             <a asp-controller="Musicas" asp-action="ModoMusico" class="btn btn-outline-warning fw-bold px-4 py-2 shadow rounded-pill">
                 <i class="bi bi-music-note-list me-2"></i> Modo Altar (<span id="contadorSelecionadas">0</span>)
             </a>
         </div>
     </div>
-
     @if (Model != null && Model.Any())
     {
-        <!-- Campo de Pesquisa em Tempo Real -->
         <div class="mb-4">
             <div class="input-group input-group-lg shadow-sm">
                 <span class="input-group-text bg-dark border-warning text-warning">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" id="inputPesquisa" class="form-control bg-dark text-light border-warning" placeholder="Pesquisar música por nome ou artista..." autocomplete="off">
+                <input type="text" id="inputPesquisa" class="form-control bg-dark text-light border-warning" placeholder="Pesquisar música por nome, artista ou momento litúrgico..." autocomplete="off">
                 <button class="btn btn-outline-warning d-none" type="button" id="btnLimparPesquisa">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
         </div>
-
-        <!-- Grade de Músicas -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5" id="gradeMusicas">
             @foreach (var musica in Model)
             {
-                <div class="col item-musica" data-titulo="@musica.Titulo?.ToLower()" data-artista="@(musica.Artista?.ToLower() ?? "")">
+                <div class="col item-musica"
+                     data-titulo="@musica.Titulo?.ToLower()"
+                     data-artista="@(musica.Artista?.ToLower() ?? "")"
+                     data-momento="@(musica.MomentoLiturgico?.ToLower() ?? "")">
                     <div class="card bg-dark border-warning h-100 shadow-lg rounded-4 transition-hover">
                         <div class="card-body d-flex flex-column justify-content-between p-4">
                             <div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="badge bg-warning text-dark fw-bold">Tom: @musica.TomOriginal?.ToUpper()</span>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="badge bg-warning text-dark fw-bold">Tom: @musica.TomOriginal?.ToUpper()</span>
+                                        @if (!string.IsNullOrEmpty(musica.MomentoLiturgico))
+                                        {
+                                            <span class="badge bg-secondary text-light">@musica.MomentoLiturgico</span>
+                                        }
+                                    </div>
                                     
-                                    <!-- Checkbox de Seleção para a Missa -->
                                     <div class="form-check m-0">
                                         <input class="form-check-input select-missa" type="checkbox" value="@musica.Id" id="chk_@musica.Id" style="cursor: pointer; transform: scale(1.2);">
                                         <label class="form-check-label text-warning small fw-bold ms-1" for="chk_@musica.Id" style="cursor: pointer;">Para a Missa</label>
@@ -55,9 +60,15 @@
                                 <h4 class="text-warning fw-bold mb-1">@musica.Titulo</h4>
                                 <p class="text-light opacity-75 small mb-3">@(string.IsNullOrEmpty(musica.Artista) ? "Ministério Shekinah" : musica.Artista)</p>
                             </div>
-                            <div class="mt-3 pt-3 border-top border-secondary">
-                                <a asp-controller="Musicas" asp-action="Detalhes" asp-route-id="@musica.Id" class="btn btn-warning text-dark fw-bold w-100 shadow-sm">
-                                    <i class="bi bi-sliders me-1"></i> Ver Cifra & Ferramentas
+                            <div class="mt-3 pt-3 border-top border-secondary d-flex gap-2">
+                                <a asp-controller="Musicas" asp-action="Detalhes" asp-route-id="@musica.Id" class="btn btn-warning text-dark fw-bold flex-grow-1 shadow-sm">
+                                    <i class="bi bi-sliders me-1"></i> Cifra
+                                </a>
+                                <a asp-controller="Musicas" asp-action="Teleprompter" asp-route-id="@musica.Id" class="btn btn-outline-warning fw-bold shadow-sm" title="Abrir em Tela Cheia com Rolagem">
+                                    <i class="bi bi-display"></i>
+                                </a>
+                                <a asp-controller="Musicas" asp-action="Editar" asp-route-id="@musica.Id" class="btn btn-outline-secondary text-light fw-bold shadow-sm" title="Editar Música">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
                             </div>
                         </div>
@@ -65,8 +76,6 @@
                 </div>
             }
         </div>
-
-        <!-- Mensagem caso a pesquisa não encontre resultados -->
         <div id="semResultadosPesquisa" class="text-center py-5 d-none">
             <div class="alert alert-dark border-warning text-light p-4 d-inline-block shadow rounded-4">
                 <i class="bi bi-search display-5 text-warning mb-2 d-block"></i>
@@ -76,7 +85,6 @@
     }
     else
     {
-        <!-- Estado Vazio -->
         <div class="text-center py-5">
             <div class="alert alert-dark border-warning text-light p-5 d-inline-block shadow rounded-4">
                 <i class="bi bi-music-note-list display-3 text-warning mb-3 d-block"></i>
@@ -87,8 +95,6 @@
         </div>
     }
 </div>
-
-<!-- Barra Flutuante de Seleção para a Missa -->
 <div id="barraMissa" class="fixed-bottom bg-black border-top border-warning p-3 shadow-lg d-none" style="z-index: 1050;">
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
         <span class="text-warning fw-bold fs-6">
@@ -96,64 +102,58 @@
         </span>
         <div class="d-flex gap-2">
             <button type="button" id="limparSelecao" class="btn btn-outline-light btn-sm rounded-pill px-3">Limpar Seleção</button>
+            <a asp-controller="Musicas" asp-action="GerarMissal" class="btn btn-outline-warning text-dark btn-sm fw-bold px-3 rounded-pill">Gerar Missal</a>
             <a asp-controller="Musicas" asp-action="ModoMusico" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow btn-sm">
                 Abrir Modo Altar <i class="bi bi-arrow-right ms-1"></i>
             </a>
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script src="~/js/repertorio-missa.js?v=2"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const inputPesquisa = document.getElementById("inputPesquisa");
-            const btnLimpar = document.getElementById("btnLimparPesquisa");
+                const btnLimpar = document.getElementById("btnLimparPesquisa");
             const itensMusica = document.querySelectorAll(".item-musica");
             const semResultados = document.getElementById("semResultadosPesquisa");
-
             if (inputPesquisa) {
-                inputPesquisa.addEventListener("input", function () {
+                inputPesquisa.addEventListener("input", function() {
                     const termo = this.value.toLowerCase().trim();
                     let visiveis = 0;
-
                     if (termo.length > 0) {
-                        btnLimpar.classList.remove("d-none");
-                    } else {
-                        btnLimpar.classList.add("d-none");
-                    }
-
-                    itensMusica.forEach(item => {
-                        const titulo = item.getAttribute("data-titulo") || "";
+                btnLimpar.classList.remove("d-none");
+            } else {
+                btnLimpar.classList.add("d-none");
+            }
+            itensMusica.forEach(item => {
+                const titulo = item.getAttribute("data-titulo") || "";
                         const artista = item.getAttribute("data-artista") || "";
-
-                        if (titulo.includes(termo) || artista.includes(termo)) {
-                            item.classList.remove("d-none");
+                const momento = item.getAttribute("data-momento") || "";
+                if (titulo.includes(termo) || artista.includes(termo) || momento.includes(termo)) {
+                    item.classList.remove("d-none");
                             visiveis++;
                         } else {
                             item.classList.add("d-none");
                         }
                     });
-
-                    if (semResultados) {
-                        if (visiveis === 0) {
-                            semResultados.classList.remove("d-none");
-                        } else {
-                            semResultados.classList.add("d-none");
-                        }
-                    }
+            if (semResultados) {
+                if (visiveis === 0) {
+                    semResultados.classList.remove("d-none");
+                } else {
+                    semResultados.classList.add("d-none");
+                }
+            }
                 });
-
-                btnLimpar.addEventListener("click", function () {
-                    inputPesquisa.value = "";
-                    inputPesquisa.dispatchEvent(new Event("input"));
+               btnLimpar.addEventListener("click", function() {
+            inputPesquisa.value = "";
+                        inputPesquisa.dispatchEvent(new Event("input"));
                     inputPesquisa.focus();
                 });
             }
         });
     </script>
 }
-
 <style>
     body {
         background-color: #121212;

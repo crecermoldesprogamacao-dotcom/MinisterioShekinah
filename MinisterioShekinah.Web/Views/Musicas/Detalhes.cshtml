@@ -58,8 +58,11 @@
                 <span id="velocidadeIndicador" class="badge bg-warning text-dark fw-bold">1x</span>
                 <button type="button" class="btn btn-outline-warning text-light btn-sm px-2 py-0 fw-bold" id="btnVelocidadeMais">+</button>
             </div>
-            <!-- Ações: Impressão -->
+            <!-- Ações: Teleprompter e Impressão -->
             <div class="d-flex gap-2">
+                <a asp-controller="Musicas" asp-action="Teleprompter" asp-route-id="@Model.Id" class="btn btn-warning btn-sm text-dark fw-bold">
+                    <i class="bi bi-display"></i> Teleprompter
+                </a>
                 <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold" onclick="window.print()">
                     <i class="bi bi-printer"></i> Imprimir
                 </button>
@@ -85,7 +88,6 @@
         background-color: #121212;
         color: #f8f9fa;
     }
-
     .cifra-fonte-custom {
         font-family: Arial, sans-serif !important;
         font-size: 14pt !important;

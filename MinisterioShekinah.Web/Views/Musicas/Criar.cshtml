@@ -8,6 +8,7 @@
             <h2 class="text-warning fw-bold mb-3 text-center"><i class="bi bi-plus-circle"></i> Adicionar Nova Música</h2>
             <p class="text-light text-center opacity-75 mb-4">Insira os dados da canção e a respetiva cifra para o repertório da paróquia.</p>
             <form asp-action="Criar">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                 <div class="mb-3">
                     <label asp-for="Titulo" class="form-label text-warning fw-bold">Título da Música</label>
                     <input asp-for="Titulo" class="form-control bg-black text-light border-secondary" placeholder="Ex: Cordeiro de Deus" required />
@@ -26,8 +27,6 @@
                         <input asp-for="Capotraste" type="number" min="0" max="12" class="form-control bg-black text-light border-secondary" value="0" />
                     </div>
                 </div>
-
-                <!-- Novo campo adicionado para o Momento Litúrgico -->
                 <div class="mb-3">
                     <label asp-for="MomentoLiturgico" class="form-label text-warning fw-bold">Momento Litúrgico / Canto</label>
                     <select asp-for="MomentoLiturgico" class="form-select bg-black text-light border-secondary">
@@ -39,6 +38,7 @@
                         <option value="Aclamação ao Evangelho">Aclamação ao Evangelho (Aleluia)</option>
                         <option value="Ofertório">Ofertório</option>
                         <option value="Santo">Santo</option>
+                        <option value="Amém (Doxologia)">Amém (Doxologia)</option>
                         <option value="Cordeiro de Deus">Cordeiro de Deus</option>
                         <option value="Comunhão">Comunhão</option>
                         <option value="Pós-Comunhão">Pós-Comunhão / Ação de Graças</option>
@@ -46,9 +46,14 @@
                         <option value="Adoração / Louvor Geral">Adoração / Louvor Geral</option>
                     </select>
                 </div>
-
                 <div class="mb-3">
-                    <label asp-for="Cifra" class="form-label text-warning fw-bold">Cifra com Acordes entre Colchetes</label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label asp-for="Cifra" class="form-label text-warning fw-bold mb-0">Cifra com Acordes entre Colchetes</label>
+                        <button type="button" id="btnOrganizarIa" class="btn btn-sm btn-outline-warning fw-bold">
+                            ✨ Organizar com IA
+                        </button>
+                    </div>
+                    <div id="statusIa" class="small mb-2" style="display: none;"></div>
                     <textarea asp-for="Cifra" rows="10" class="form-control bg-black text-light border-secondary font-monospace" placeholder="Ex: [G]       [D/F#]&#10;Vem com Tua glória..." required></textarea>
                     <small class="text-muted">Dica: Coloque os acordes entre parênteses rectos (ex: `[G]`, `[D/F#]`) para que o sistema permita transpor o tom automaticamente.</small>
                 </div>
@@ -77,4 +82,73 @@
         box-shadow: 0 0 0 0.25rem rgba(223, 178, 53, 0.25);
     }
 </style>
-```[file-tag: code-generated-file-7013ffeb-7422-4952-b88d-ee9c63673dbb]
+@section Scripts {
+    <script>
+        document.getElementById('btnOrganizarIa').addEventListener('click', async function() {
+            const btn = this;
+            const statusDiv = document.getElementById('statusIa');
+            const tituloInput = document.getElementById('Titulo');
+            const cifraInput = document.getElementById('Cifra');
+            const tomInput = document.getElementById('TomOriginal');
+            const momentoSelect = document.getElementById('MomentoLiturgico');
+            if (!cifraInput.value.trim()) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'small mb-2 text-danger';
+                statusDiv.textContent = 'Cole a letra ou cifra antes de clicar em Organizar com IA.';
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> A organizar...';
+            statusDiv.style.display = 'none';
+            try {
+                const response = await fetch('@Url.Action("OrganizarComIa", "Musicas")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        titulo: tituloInput.value,
+                        cifra: cifraInput.value
+                    })
+                });
+                const textoResposta = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(textoResposta);
+                } catch {
+                    throw new Error('Resposta inválida do servidor.');
+                }
+                if (!response.ok) {
+                    throw new Error(data.erro || 'Erro ao processar a cifra.');
+                }
+                if (data.cifraFormatada) cifraInput.value = data.cifraFormatada;
+                if (data.tomDetectado) tomInput.value = data.tomDetectado;
+                if (data.momentoSugerido && data.momentoSugerido !== 'Outro') {
+                    const mapaMomentos = {
+                        'Glória': 'Hino de Louvor (Glória)',
+                        'Salmo': 'Salmo Responsorial',
+                        'Ação de Graças': 'Pós-Comunhão',
+                        'Final': 'Final / Envio',
+                        'Adoração': 'Adoração / Louvor Geral'
+                    };
+                    const valorAlvo = mapaMomentos[data.momentoSugerido] || data.momentoSugerido;
+                    for (let i = 0; i < momentoSelect.options.length; i++) {
+                        if (momentoSelect.options[i].value === valorAlvo) {
+                            momentoSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'small mb-2 text-success';
+                statusDiv.textContent = `✨ Cifra organizada! Tom detetado: ${data.tomDetectado} | Momento: ${data.momentoSugerido} | ${data.sugestaoCapotraste}`;
+            } catch (error) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'small mb-2 text-danger';
+                statusDiv.textContent = 'Erro: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✨ Organizar com IA';
+            }
+        });
+    </script>
+}
+[cite: 13]

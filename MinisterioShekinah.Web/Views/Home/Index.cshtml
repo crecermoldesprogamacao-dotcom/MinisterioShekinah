@@ -1,7 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Início - Ministério Shekinah";
 }
-
 <div class="container my-5">
     <!-- Secção Principal / Herói -->
     <div class="p-5 mb-5 bg-dark border border-warning rounded-4 shadow-lg text-center text-md-start d-flex flex-column flex-md-row justify-content-between align-items-center">
@@ -27,7 +26,7 @@
         </div>
     </div>
 
-    <!-- Secção do Instagram Atualizada e Limpa -->
+    <!-- Secção do Instagram Atualizada com Foto de Perfil -->
     <div class="row align-items-center my-5 p-4 bg-dark border border-warning rounded-4 shadow-lg">
         <!-- Lado Esquerdo: Textos e Botão -->
         <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
@@ -42,13 +41,14 @@
                 </a>
             </div>
         </div>
-
-        <!-- Lado Direito: Apenas UM Card Clicável -->
+        <!-- Lado Direito: Card Clicável com a Foto de Perfil -->
         <div class="col-lg-5 text-center">
             <a href="https://www.instagram.com/shekinahvalinhos" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                 <div class="card bg-black border-warning shadow-lg rounded-4 p-4 text-center h-100 transition-hover">
-                    <div class="card-body">
-                        <i class="bi bi-camera-fill display-3 text-warning mb-3"></i>
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <div class="p-1 rounded-circle border border-warning mb-3 shadow" style="background: rgba(223, 178, 53, 0.1);">
+                            <img src="~/images/instagram-perfil.jpg" alt="Ministério Shekinah Instagram" class="rounded-circle img-fluid" style="width: 90px; height: 90px; object-fit: cover;">
+                        </div>
                         <h4 class="text-white fw-bold mb-1">Ministério Shekinah</h4>
                         <p class="text-light opacity-75 small m-0">Servindo com excelência ao altar do Senhor.</p>
                     </div>
@@ -63,29 +63,23 @@
         background-color: #121212;
         color: #f8f9fa;
     }
-
     .text-warning {
         color: #dfb235 !important;
     }
-
     .border-warning {
         border-color: #dfb235 !important;
     }
-
     .btn-warning {
         background-color: #dfb235;
         border-color: #dfb235;
     }
-
         .btn-warning:hover {
             background-color: #c4992b;
             border-color: #c4992b;
         }
-
     .transition-hover {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-
         .transition-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 1rem 3rem rgba(223, 178, 53, 0.15) !important;

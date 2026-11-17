@@ -1,44 +1,75 @@
 ﻿@model IEnumerable<MinisterioShekinah.Web.Models.Musica>
 @{
     ViewData["Title"] = "Modo Músico / Altar - Ministério Shekinah";
+    var listaMusicas = Model?.ToList() ?? new List<MinisterioShekinah.Web.Models.Musica>();
 }
 <div class="container my-4" style="max-width: 900px;">
-    <!-- Cabeçalho Fixo do Modo Altar com Controlo de Rolagem -->
     <div class="card bg-dark border-warning shadow-lg rounded-4 p-3 mb-4 sticky-top" style="top: 85px; z-index: 1000;">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
                 <h3 class="text-warning fw-bold m-0"><i class="bi bi-music-note-list me-2"></i> Modo Músico / Altar</h3>
-                <p class="text-light opacity-75 small m-0">Ministério Shekinah - Valinhos/SP</p>
+                <p class="text-light opacity-75 small m-0">
+                    @(string.IsNullOrEmpty(ViewBag.NomeEvento) ? "Ministério Shekinah - Valinhos/SP" : ViewBag.NomeEvento)
+                </p>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <!-- Botões de Controlo de Rolagem -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
                 <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-3" id="btnPlayGlobal">
                     <i class="bi bi-play-fill"></i> Rolagem Auto
                 </button>
                 <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold px-2" id="btnVelocidadeMenos">-</button>
                 <span id="velocidadeIndicador" class="badge bg-warning text-dark fw-bold">1x</span>
                 <button type="button" class="btn btn-outline-warning text-light btn-sm fw-bold px-2" id="btnVelocidadeMais">+</button>
-                
-                <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold ms-2">Voltar ao Repertório</a>
+
+                @if (listaMusicas.Any())
+                {
+                    var queryIds = string.Join("&", listaMusicas.Select(m => $"musicasIds={m.Id}"));
+                    var tituloUrl = Uri.EscapeDataString((string)(ViewBag.NomeEvento ?? "Repertório da Santa Missa"));
+                    var corUrl = Uri.EscapeDataString((string)(ViewBag.CorLiturgica ?? ""));
+                    var salmoUrl = Uri.EscapeDataString((string)(ViewBag.SalmoRefrao ?? ""));
+                    <a href="@Url.Action("TeleprompterMissa", "Musicas")?@queryIds&NomeEvento=@tituloUrl&CorLiturgica=@corUrl&SalmoRefrao=@salmoUrl"
+                       class="btn btn-warning btn-sm text-dark fw-bold ms-1">
+                        <i class="bi bi-display me-1"></i> Teleprompter Completo
+                    </a>
+                }
+
+                <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light btn-sm fw-bold ms-1">Voltar ao Repertório</a>
             </div>
         </div>
     </div>
-    <!-- Mensagem de Aviso caso o filtro esteja ativo -->
+
+    @if (!string.IsNullOrEmpty(ViewBag.SalmoRefrao))
+    {
+        <div class="alert bg-black text-light border-warning mb-4 rounded-4">
+            <strong class="text-warning">Refrão do Salmo Responsorial:</strong> <span class="fst-italic">@ViewBag.SalmoRefrao</span>
+        </div>
+    }
+
     <div id="avisoFiltro" class="alert alert-warning bg-dark text-warning border-warning mb-4 d-none">
         <i class="bi bi-info-circle-fill me-2"></i> A exibir apenas as músicas selecionadas para a Missa. <a asp-controller="Home" asp-action="Repertorio" class="alert-link text-light underline">Alterar seleção no Repertório</a>.
     </div>
-    <!-- Lista Contínua de Músicas -->
-    @if (Model != null && Model.Any())
+
+    @if (listaMusicas.Any())
     {
-        @foreach (var musica in Model)
+        @foreach (var musica in listaMusicas)
         {
             <div class="card bg-dark border-secondary mb-5 shadow-lg rounded-4 overflow-hidden card-altar-musica" data-id="@musica.Id">
-                <div class="card-header bg-black border-bottom border-warning py-3 d-flex justify-content-between align-items-center">
+                <div class="card-header bg-black border-bottom border-warning py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div>
                         <h4 class="text-warning fw-bold mb-1">@musica.Titulo</h4>
-                        <span class="text-light opacity-75 small">@(string.IsNullOrEmpty(musica.Artista) ? "Ministério Shekinah" : musica.Artista)</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-light opacity-75 small">@(string.IsNullOrEmpty(musica.Artista) ? "Ministério Shekinah" : musica.Artista)</span>
+                            @if (!string.IsNullOrEmpty(musica.MomentoLiturgico))
+                            {
+                                <span class="badge bg-secondary text-light">@musica.MomentoLiturgico</span>
+                            }
+                        </div>
                     </div>
-                    <span class="badge bg-warning text-dark fw-bold px-3 py-2">Tom: @musica.TomOriginal?.ToUpper()</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-2">Tom: @musica.TomOriginal?.ToUpper()</span>
+                        <a asp-controller="Musicas" asp-action="Teleprompter" asp-route-id="@musica.Id" class="btn btn-outline-warning btn-sm fw-bold">
+                            <i class="bi bi-display me-1"></i> Teleprompter
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body bg-dark text-light p-4">
                     <pre class="text-light m-0 cifra-estilo-shekinah" id="cifra-altar-@musica.Id">@musica.Cifra</pre>
@@ -61,18 +92,20 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll(".cifra-estilo-shekinah").forEach(el => {
-                let texto = el.innerText;
+                let texto = el.textContent;
                 let linhas = texto.split('\n');
                 let linhasProcessadas = linhas.map(linha => {
-                    return linha.split(/(\s+)/).map(token => {
-                        let t = token.trim();
-                        // Identifica acordes (com ou sem colchetes) e aplica a classe de negrito/cor
-                        if (t.length > 0 && t.length <= 8 && /^(?:\[)?[A-G][b#]?(?:m|maj|min|dim|aug|sus|add|\+|\-|°|0|[0-9#bM])*(?:\/[A-G][b#]?)?(?:\])?$/.test(t)) {
-                            let limpo = t.replace(/[\[\]]/g, '');
-                            return `<b class="acorde-negrito">${limpo}</b>`;
-                        }
-                        return token;
-                    }).join('');
+                    linha = linha.replace(/\[([A-G][b#]?(?:m|maj|min|dim|aug|sus|add|\+|\-|°|0|[0-9#bM])*(?:\/[A-G][b#]?)?)\]/g, '<b class="acorde-negrito">$1</b>');
+                    if (!linha.includes('<b class="acorde-negrito">')) {
+                        return linha.split(/(\s+)/).map(token => {
+                            let t = token.trim();
+                            if (t.length > 0 && t.length <= 10 && /^[A-G][b#]?(?:m|maj|min|dim|aug|sus|add|\+|\-|°|0|[0-9#bM])*(?:\/[A-G][b#]?)?$/.test(t)) {
+                                return `<b class="acorde-negrito">${t}</b>`;
+                            }
+                            return token;
+                        }).join('');
+                    }
+                    return linha;
                 });
                 el.innerHTML = linhasProcessadas.join('\n');
             });
@@ -87,8 +120,8 @@
     }
 
     .cifra-estilo-shekinah {
-        font-family: Arial, sans-serif !important;
-        font-size: 14pt !important;
+        font-family: 'Courier New', Consolas, monospace !important;
+        font-size: 13pt !important;
         line-height: 1.6 !important;
         white-space: pre-wrap !important;
     }

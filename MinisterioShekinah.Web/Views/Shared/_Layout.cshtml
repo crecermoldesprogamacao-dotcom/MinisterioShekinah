@@ -53,9 +53,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-light fw-semibold" asp-controller="Musicas" asp-action="ModoMusico">Modo Altar</a>
                         </li>
-                        <!-- Novo link adicionado para o Modo Missa / Evento -->
+                        <!-- Link corrigido para apontar para GerarMissal -->
                         <li class="nav-item">
-                            <a class="nav-link text-warning fw-semibold" asp-controller="Musicas" asp-action="SelecionarMissal">
+                            <a class="nav-link text-warning fw-semibold" asp-controller="Musicas" asp-action="GerarMissal">
                                 <i class="bi bi-file-earmark-text me-1"></i> Gerar Missal
                             </a>
                         </li>
@@ -131,4 +131,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-```[file-tag: code-generated-file-33069145-207d-419b-ab9f-e60d00f681d3]
