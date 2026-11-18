@@ -131,19 +131,27 @@ namespace MinisterioShekinah.Web.Services
         // 5. Registo de Feedback (Aprendizado Contínuo)
         public async Task RegistarFeedbackAsync(string tipoAcao, string textoOriginal, string geradoPorIa, string correcaoUsuario)
         {
-            if (string.IsNullOrWhiteSpace(correcaoUsuario)) return;
-
-            var feedback = new FeedbackAprendizado
+            try
             {
-                TipoAcao = tipoAcao,
-                TextoOriginal = textoOriginal,
-                RespostaGeradaPorIa = geradoPorIa,
-                CorrecaoDoUsuario = correcaoUsuario,
-                DataCriacao = DateTime.UtcNow
-            };
+                if (string.IsNullOrWhiteSpace(correcaoUsuario)) return;
 
-            _context.FeedbacksAprendizado.Add(feedback);
-            await _context.SaveChangesAsync();
+                var feedback = new FeedbackAprendizado
+                {
+                    TipoAcao = tipoAcao,
+                    TextoOriginal = textoOriginal,
+                    RespostaGeradaPorIa = geradoPorIa,
+                    CorrecaoDoUsuario = correcaoUsuario,
+                    DataCriacao = DateTime.UtcNow
+                };
+
+                _context.FeedbacksAprendizados.Add(feedback);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Proteção total: se houver qualquer problema na tabela, o sistema regista o aviso mas não dá crash
+                Console.WriteLine($"Aviso: Não foi possível gravar o feedback: {ex.Message}");
+            }
         }
 
         public bool VerificarMusicaDuplicada(string titulo, string cifra, out string nomeExistente)

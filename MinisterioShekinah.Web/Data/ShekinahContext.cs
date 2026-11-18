@@ -21,6 +21,7 @@ namespace MinisterioShekinah.Web.Data
         public DbSet<SobreMinisterio> SobreMinisterios { get; set; }
         public DbSet<VelaVirtual> VelasVirtuais { get; set; }
         public DbSet<FeedbackAprendizado> FeedbacksAprendizado { get; set; }
+        public DbSet<FeedbackAprendizado> FeedbacksAprendizados { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
