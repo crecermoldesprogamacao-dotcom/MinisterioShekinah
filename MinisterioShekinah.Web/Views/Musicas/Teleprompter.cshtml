@@ -55,17 +55,41 @@
             margin: 0 auto;
             padding: 25px 20px;
             font-size: 18px;
-            line-height: 1.6;
+            line-height: 1.5;
         }
-        /* Correção para evitar quebra de linha desalinhada no mobile com scroll horizontal */
+
         .conteudo-cifra-item {
             font-family: 'Courier New', Courier, monospace;
-            white-space: pre;
-            overflow-x: auto;
-            display: block;
             width: 100%;
             padding-bottom: 15px;
-            -webkit-overflow-scrolling: touch;
+        }
+
+        .linha-cifra-par {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            padding: 2px 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .linha-acordes {
+            color: #dfb235;
+            font-weight: bold;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.25;
+        }
+
+        .linha-texto {
+            color: #f8f9fa;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.35;
+        }
+
+        .linha-vazia {
+            height: 14px;
         }
 
         .musica-bloco {
@@ -83,14 +107,6 @@
             color: #dfb235;
             font-weight: bold;
             font-family: 'Courier New', Courier, monospace;
-        }
-
-        .linha-letra {
-            display: inline-block;
-            width: 100%;
-            border-radius: 6px;
-            padding: 2px 6px;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .linha-ativa-voz {
@@ -122,6 +138,17 @@
                 border-color: #c4992b;
                 color: #121212;
             }
+
+        @@media (max-width: 576px) {
+            body {
+                padding-top: 135px;
+            }
+
+            #cifra-container {
+                padding: 15px 12px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -256,11 +283,13 @@
         const tomBaseOriginal = "@(primeiraMusica?.TomOriginal?.ToUpper() ?? "C")";
         let transposicaoTom = 0;
         let capoAtual = @(listaMusicas.Count == 1 ? (primeiraMusica?.Capotraste ?? 0) : 0);
+
         function irParaMusica(idSecao) {
             if (!idSecao) return;
             const el = document.getElementById(idSecao);
             if (el) el.scrollIntoView({ behavior: 'smooth' });
         }
+
         function normalizarTexto(str) {
             return str
                 .toLowerCase()
@@ -270,50 +299,143 @@
                 .replace(/\s+/g, " ")
                 .trim();
         }
+
+        function quebrarLinhaComAcordes(linhaAcordes, linhaLetra, maxChars) {
+            if (linhaLetra.length <= maxChars && linhaAcordes.length <= maxChars) {
+                return [{ acordes: linhaAcordes, letra: linhaLetra }];
+            }
+
+            const segmentos = [];
+            let pos = 0;
+            const maxLen = Math.max(linhaAcordes.length, linhaLetra.length);
+            const acPad = linhaAcordes.padEnd(maxLen, ' ');
+            const lePad = linhaLetra.padEnd(maxLen, ' ');
+
+            while (pos < maxLen) {
+                let fim = pos + maxChars;
+                if (fim < maxLen) {
+                    let corte = fim;
+                    while (corte > pos + 10) {
+                        const charLetra = lePad[corte];
+                        const charAcorde = acPad[corte];
+                        const prevAcorde = acPad[corte - 1];
+                        if (charLetra === ' ' && charAcorde === ' ' && prevAcorde === ' ') {
+                            break;
+                        }
+                        corte--;
+                    }
+                    if (corte <= pos + 10) corte = fim;
+                    fim = corte;
+                } else {
+                    fim = maxLen;
+                }
+
+                segmentos.push({
+                    acordes: acPad.slice(pos, fim).trimEnd(),
+                    letra: lePad.slice(pos, fim).trimEnd()
+                });
+
+                pos = fim;
+                while (pos < maxLen && lePad[pos] === ' ' && acPad[pos] === ' ') {
+                    pos++;
+                }
+            }
+            return segmentos;
+        }
+
+        function envolverAcordesHtml(textoLinha, regexTokenAcorde) {
+            return textoLinha.split(/(\s+)/).map(token => {
+                let t = token.trim();
+                if (t.length > 0 && t.length <= 10 && regexTokenAcorde.test(t)) {
+                    return `<span class="acorde">${t}</span>`;
+                }
+                return token;
+            }).join('');
+        }
+
+        function calcularLarguraMaximaChars() {
+            const container = document.getElementById("cifra-container");
+            const larguraPx = container ? container.clientWidth - 36 : window.innerWidth - 36;
+            const fontSize = parseFloat(window.getComputedStyle(container).fontSize) || 18;
+            const charWidth = fontSize * 0.602;
+            return Math.max(24, Math.floor(larguraPx / charWidth));
+        }
+
         function formatarAcordes() {
             const regexAcordeColchete = /\[([A-G][#b]?(?:m|maj|min|dim|aug|sus|add|\+|\-|°|0|[0-9#bM])*(?:\/[A-G][#b]?)?)\]/g;
             const regexTokenAcorde = /^[A-G][#b]?(?:m|maj|min|dim|aug|sus|add|\+|\-|°|0|[0-9#bM])*(?:\/[A-G][#b]?)?$/;
+            const maxChars = calcularLarguraMaximaChars();
+
             document.querySelectorAll(".conteudo-cifra-item").forEach(container => {
-                let texto = container.textContent;
-                let linhas = texto.split('\n');
-                let linhasFormatadas = linhas.map(linha => {
-                    let textoSemColchetes = linha.replace(regexAcordeColchete, '');
-                    let linhaHtml = linha.replace(regexAcordeColchete, '<span class="acorde">$1</span>');
-                    let temLetraCantada = false;
-                    if (!linhaHtml.includes('<span class="acorde">')) {
-                        let tokens = linha.split(/(\s+)/);
-                        let palavrasNaoAcorde = 0;
-                        linhaHtml = tokens.map(token => {
-                            let t = token.trim();
-                            if (t.length > 0 && t.length <= 10 && regexTokenAcorde.test(t)) {
-                                return `<span class="acorde">${t}</span>`;
-                            } else if (t.length > 0) {
-                                palavrasNaoAcorde++;
-                            }
-                            return token;
-                        }).join('');
-                        if (palavrasNaoAcorde > 0) {
-                            temLetraCantada = true;
+                if (!container.hasAttribute("data-raw-cifra")) {
+                    container.setAttribute("data-raw-cifra", container.textContent);
+                }
+                const textoOriginal = container.getAttribute("data-raw-cifra");
+                const linhas = textoOriginal.split('\n');
+                let htmlFinal = '';
+
+                for (let i = 0; i < linhas.length; i++) {
+                    let linha = linhas[i].replace(/\r$/, '');
+                    if (linha.trim() === '') {
+                        htmlFinal += '<div class="linha-vazia"></div>';
+                        continue;
+                    }
+
+                    let tokens = linha.trim().split(/\s+/);
+                    let ehLinhaDeAcordes = tokens.length > 0 && tokens.every(t => t.length <= 10 && regexTokenAcorde.test(t.replace(/[\[\]]/g, '')));
+
+                    if (ehLinhaDeAcordes && i + 1 < linhas.length) {
+                        let proximaLinha = linhas[i + 1].replace(/\r$/, '');
+                        let tokensProx = proximaLinha.trim().split(/\s+/);
+                        let proxEhAcorde = tokensProx.length > 0 && tokensProx.every(t => t.length <= 10 && regexTokenAcorde.test(t.replace(/[\[\]]/g, '')));
+
+                        if (proximaLinha.trim() !== '' && !proxEhAcorde) {
+                            let linhaAcordesLimpa = linha.replace(/\[([A-G][#b]?[^\]]*)\]/g, '$1');
+                            let linhaLetraLimpa = proximaLinha.replace(/\[([A-G][#b]?[^\]]*)\]/g, '$1');
+                            let fraseLimpa = normalizarTexto(linhaLetraLimpa);
+
+                            const partes = quebrarLinhaComAcordes(linhaAcordesLimpa, linhaLetraLimpa, maxChars);
+                            partes.forEach((parte, idx) => {
+                                const attrFrase = (idx === 0 && fraseLimpa.length >= 4) ? ` data-frase="${fraseLimpa}"` : '';
+                                const classeVoz = (fraseLimpa.length >= 4) ? ' linha-letra' : '';
+                                htmlFinal += `
+                                            <div class="linha-cifra-par${classeVoz}"${attrFrase}>
+                                                <div class="linha-acordes">${envolverAcordesHtml(parte.acordes, regexTokenAcorde)}</div>
+                                                <div class="linha-texto">${envolverAcordesHtml(parte.letra, regexTokenAcorde)}</div>
+                                            </div>`;
+                            });
+                            i++;
+                            continue;
                         }
+                    }
+
+                    let linhaSemColchetes = linha.replace(regexAcordeColchete, '');
+                    let linhaLimpa = linha.replace(/\[([A-G][#b]?[^\]]*)\]/g, '$1');
+                    let fraseLimpa = normalizarTexto(linhaSemColchetes);
+                    let classeVoz = (!ehLinhaDeAcordes && fraseLimpa.length >= 4) ? ' linha-letra' : '';
+                    let attrFrase = (!ehLinhaDeAcordes && fraseLimpa.length >= 4) ? ` data-frase="${fraseLimpa}"` : '';
+
+                    if (ehLinhaDeAcordes) {
+                        htmlFinal += `
+                                    <div class="linha-cifra-par">
+                                        <div class="linha-acordes">${envolverAcordesHtml(linhaLimpa, regexTokenAcorde)}</div>
+                                    </div>`;
                     } else {
-                        if (textoSemColchetes.trim().length > 2) {
-                            temLetraCantada = true;
-                        }
+                        htmlFinal += `
+                                    <div class="linha-cifra-par${classeVoz}"${attrFrase}>
+                                        <div class="linha-texto">${envolverAcordesHtml(linhaLimpa, regexTokenAcorde)}</div>
+                                    </div>`;
                     }
-                    if (temLetraCantada) {
-                        let fraseLimpa = normalizarTexto(textoSemColchetes);
-                        if (fraseLimpa.length >= 4) {
-                            return `<span class="linha-letra" data-frase="${fraseLimpa}">${linhaHtml}</span>`;
-                        }
-                    }
-                    return linhaHtml;
-                });
-                container.innerHTML = linhasFormatadas.join('\n');
+                }
+                container.innerHTML = htmlFinal;
             });
+
             document.querySelectorAll(".acorde").forEach(el => {
                 el.setAttribute("data-original", el.innerText);
             });
+            recalcularCifra();
         }
+
         function transporNota(nota, semitons) {
             let base = bemolParaSustenido[nota] || nota;
             let index = notas.indexOf(base);
@@ -321,13 +443,16 @@
             let novoIndex = (index + semitons % 12 + 12) % 12;
             return notas[novoIndex];
         }
+
         function recalcularCifra() {
             const deslocamentoVisual = transposicaoTom - capoAtual;
             document.querySelectorAll(".acorde").forEach(el => {
                 const original = el.getAttribute("data-original");
-                el.innerText = original.replace(/([A-G][#b]?)/g, (match) => {
-                    return transporNota(match, deslocamentoVisual);
-                });
+                if (original) {
+                    el.innerText = original.replace(/([A-G][#b]?)/g, (match) => {
+                        return transporNota(match, deslocamentoVisual);
+                    });
+                }
             });
             document.querySelectorAll(".tom-individual").forEach(badge => {
                 const base = badge.getAttribute("data-tom-base");
@@ -343,19 +468,24 @@
                 }
             }
         }
+
         function alterarTom(semitons) {
             transposicaoTom += semitons;
             recalcularCifra();
         }
+
         function alterarCapo() {
             capoAtual = parseInt(document.getElementById("capo-select").value) || 0;
             recalcularCifra();
         }
-        let tamanhoAtual = 18;
+
+        let tamanhoAtual = window.innerWidth <= 576 ? 16 : 18;
         function mudarFonte(delta) {
             tamanhoAtual = Math.max(12, Math.min(36, tamanhoAtual + delta));
             document.getElementById("cifra-container").style.fontSize = tamanhoAtual + "px";
+            formatarAcordes();
         }
+
         let rolando = false;
         let intervaloRolagem = null;
         function toggleRolagem() {
@@ -376,6 +506,7 @@
                 }, 30);
             }
         }
+
         let recognition = null;
         let vozAtiva = false;
         let pulsoMicInterval = null;
@@ -435,6 +566,7 @@
                 });
             }
         }
+
         function sincronizarLetraPorVoz(falaNormalizada) {
             if (!falaNormalizada || falaNormalizada.length < 4) return;
             const linhas = document.querySelectorAll(".linha-letra");
@@ -470,6 +602,7 @@
                 melhorLinha.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+
         function toggleTelaCheia() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -477,11 +610,17 @@
                 document.exitFullscreen();
             }
         }
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                formatarAcordes();
+            }, 200);
+        });
+
         document.addEventListener("DOMContentLoaded", () => {
             formatarAcordes();
-            if (capoAtual > 0) {
-                recalcularCifra();
-            }
         });
     </script>
 </body>
