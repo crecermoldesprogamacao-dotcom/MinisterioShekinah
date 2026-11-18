@@ -43,7 +43,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
-        /* Oculta a barra de ferramentas ao rolar para baixo */
+
         .controls-hidden {
             transform: translateY(-100%);
             opacity: 0;
@@ -54,16 +54,18 @@
             max-width: 920px;
             margin: 0 auto;
             padding: 25px 20px;
-            font-size: 20px;
-            line-height: 1.65;
-            white-space: pre-wrap;
-            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            line-height: 1.6;
         }
-
+        /* Correção para evitar quebra de linha desalinhada no mobile com scroll horizontal */
         .conteudo-cifra-item {
             font-family: 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
-            word-break: break-word;
+            white-space: pre;
+            overflow-x: auto;
+            display: block;
+            width: 100%;
+            padding-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .musica-bloco {
@@ -236,7 +238,6 @@
         }
     </div>
     <script>
-        // Ocultar barra ao rolar para baixo
         let lastScrollTop = 0;
         const toolbar = document.querySelector('.toolbar');
         window.addEventListener('scroll', function() {
@@ -350,9 +351,9 @@
             capoAtual = parseInt(document.getElementById("capo-select").value) || 0;
             recalcularCifra();
         }
-        let tamanhoAtual = 20;
+        let tamanhoAtual = 18;
         function mudarFonte(delta) {
-            tamanhoAtual = Math.max(14, Math.min(48, tamanhoAtual + delta));
+            tamanhoAtual = Math.max(12, Math.min(36, tamanhoAtual + delta));
             document.getElementById("cifra-container").style.fontSize = tamanhoAtual + "px";
         }
         let rolando = false;
