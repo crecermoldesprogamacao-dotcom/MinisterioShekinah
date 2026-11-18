@@ -133,7 +133,7 @@ namespace MinisterioShekinah.Web.Services
         {
             if (string.IsNullOrWhiteSpace(correcaoUsuario)) return;
 
-            var feedback = new FeedbackAprendizadoIa
+            var feedback = new FeedbackAprendizado
             {
                 TipoAcao = tipoAcao,
                 TextoOriginal = textoOriginal,
