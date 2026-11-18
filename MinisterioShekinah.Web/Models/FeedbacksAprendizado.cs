@@ -2,7 +2,7 @@
 
 namespace MinisterioShekinah.Web.Models
 {
-    public class FeedbackAprendizado
+    public class FeedbacksAprendizado
     {
         public int Id { get; set; }
         public string TipoAcao { get; set; } = string.Empty; // Ex: "OrganizacaoCifra", "SugestaoLiturgia"
