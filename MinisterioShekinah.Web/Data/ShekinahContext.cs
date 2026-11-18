@@ -25,7 +25,8 @@ namespace MinisterioShekinah.Web.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Propriedade MomentoLiturgico ativa e mapeada normalmente
+
+            modelBuilder.Entity<FeedbackAprendizado>().ToTable("FeedbacksAprendizado", "public");
         }
     }
 }
