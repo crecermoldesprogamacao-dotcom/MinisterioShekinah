@@ -26,7 +26,7 @@ namespace MinisterioShekinah.Web.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<FeedbackAprendizado>().ToTable("FeedbacksAprendizado", "public");
+            modelBuilder.Entity<FeedbackAprendizado>().ToTable("feedbacksaprendizado", "public");
         }
     }
 }
