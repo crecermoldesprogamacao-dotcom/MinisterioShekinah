@@ -104,9 +104,50 @@ namespace MinisterioShekinah.Web.Services
             return false;
         }
 
-        public Dictionary<string, Musica> SugerirRepertorioPorLiturgia(List<Musica> todas, dynamic liturgia)
+        // 5. Sugestão Inteligente de Repertório por Liturgia
+        public Dictionary<string, Musica> SugerirRepertorioPorLiturgia(List<Musica> todasMusicas, dynamic liturgia)
         {
-            return new Dictionary<string, Musica>();
+            var repertorioSugerido = new Dictionary<string, Musica>();
+            if (todasMusicas == null || !todasMusicas.Any()) return repertorioSugerido;
+
+            string liturgiaTitulo = ((object)liturgia?.Liturgia ?? "").ToString().ToLower();
+
+            // Percorre as músicas cadastradas para encontrar correspondências temáticas
+            foreach (var musica in todasMusicas)
+            {
+                string momento = (musica.MomentoLiturgico ?? "").Trim();
+                string textoMusica = $"{musica.Titulo} {musica.Cifra}".ToLower();
+
+                if (string.IsNullOrEmpty(momento)) continue;
+
+                // Evita duplicar o mesmo momento litúrgico
+                if (!repertorioSugerido.ContainsKey(momento))
+                {
+                    if (momento.Equals("Entrada", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (liturgiaTitulo.Contains("advento") && (textoMusica.Contains("vencem") || textoMusica.Contains("esperando") || textoMusica.Contains("germine") || textoMusica.Contains("caminho")))
+                        {
+                            repertorioSugerido[momento] = musica;
+                        }
+                    }
+                }
+            }
+
+            // Garante que os principais momentos da Missa fiquem preenchidos com as músicas registadas
+            var momentosObrigatorios = new[] { "Entrada", "Ato Penitencial", "Glória", "Salmo Responsorial", "Aclamação ao Evangelho", "Ofertório", "Santo", "Cordeiro de Deus", "Comunhão", "Final / Envio" };
+            foreach (var mom in momentosObrigatorios)
+            {
+                if (!repertorioSugerido.ContainsKey(mom))
+                {
+                    var compativel = todasMusicas.FirstOrDefault(m => (m.MomentoLiturgico ?? "").Equals(mom, StringComparison.OrdinalIgnoreCase) || (m.MomentoLiturgico ?? "").Contains(mom));
+                    if (compativel != null)
+                    {
+                        repertorioSugerido[mom] = compativel;
+                    }
+                }
+            }
+
+            return repertorioSugerido;
         }
 
         public Dictionary<string, Musica> GerarRepertorioMissaAutomatico()
