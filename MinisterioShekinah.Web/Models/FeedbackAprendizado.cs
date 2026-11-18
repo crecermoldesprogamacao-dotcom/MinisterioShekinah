@@ -1,11 +1,13 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinisterioShekinah.Web.Models
 {
+    [Table("FeedbacksAprendizado")]
     public class FeedbackAprendizado
     {
         public int Id { get; set; }
-        public string TipoAcao { get; set; } = string.Empty; // Ex: "OrganizacaoCifra", "SugestaoLiturgia"
+        public string TipoAcao { get; set; } = string.Empty;
         public string TextoOriginal { get; set; } = string.Empty;
         public string RespostaGeradaPorIa { get; set; } = string.Empty;
         public string CorrecaoDoUsuario { get; set; } = string.Empty;
