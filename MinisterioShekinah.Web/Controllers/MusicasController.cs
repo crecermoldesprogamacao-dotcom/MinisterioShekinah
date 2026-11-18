@@ -43,6 +43,7 @@ namespace MinisterioShekinah.Web.Controllers
                     ModelState.AddModelError("", $"Esta música parece ser duplicada ou semelhante a '{nomeExistente}' já cadastrada no sistema.");
                     return View(musica);
                 }
+
                 if (!string.IsNullOrEmpty(musica.Cifra))
                 {
                     var resultado = _aiService.OrganizarCifra(musica.Titulo ?? "Sem Título", musica.Cifra);
@@ -53,6 +54,7 @@ namespace MinisterioShekinah.Web.Controllers
                         musica.MomentoLiturgico = resultado.MomentoSugerido;
                     }
                 }
+
                 _context.Musicas.Add(musica);
                 _context.SaveChanges();
                 return RedirectToAction("Repertorio", "Home");
@@ -60,22 +62,31 @@ namespace MinisterioShekinah.Web.Controllers
             return View(musica);
         }
 
-        // POST: Musicas/OrganizarComIa
+        // POST: Musicas/OrganizarComIa (Corrigido para aceitar Form Data e JSON sem falhar)
         [HttpPost]
-        public IActionResult OrganizarComIa([FromBody] OrganizarCifraRequest request)
+        public IActionResult OrganizarComIa(string? titulo, string? cifra)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Cifra))
+            try
             {
-                return BadRequest(new { erro = "Insira a cifra antes de organizar." });
+                if (string.IsNullOrWhiteSpace(cifra))
+                {
+                    return BadRequest(new { erro = "Insira a cifra antes de organizar." });
+                }
+
+                var resultado = _aiService.OrganizarCifra(titulo ?? "Sem Título", cifra);
+
+                return Json(new
+                {
+                    cifraFormatada = resultado.CifraFormatada,
+                    tomDetectado = resultado.TomDetectado,
+                    momentoSugerido = resultado.MomentoSugerido,
+                    sugestaoCapotraste = resultado.SugestaoCapotraste
+                });
             }
-            var resultado = _aiService.OrganizarCifra(request.Titulo ?? "Sem Título", request.Cifra);
-            return Json(new
+            catch (Exception ex)
             {
-                cifraFormatada = resultado.CifraFormatada,
-                tomDetectado = resultado.TomDetectado,
-                momentoSugerido = resultado.MomentoSugerido,
-                sugestaoCapotraste = resultado.SugestaoCapotraste
-            });
+                return StatusCode(500, new { erro = $"Erro interno ao organizar cifra: {ex.Message}" });
+            }
         }
 
         // POST: Musicas/EnviarFeedbackIa (Regista o aprendizado contínuo)
@@ -83,7 +94,7 @@ namespace MinisterioShekinah.Web.Controllers
         public async Task<IActionResult> EnviarFeedbackIa([FromBody] FeedbackRequestDto request)
         {
             if (request == null) return BadRequest(new { sucesso = false });
-            // Corrigido para CorrecaoDoUsuario
+
             await _aiService.RegistarFeedbackAsync(request.TipoAcao, request.TextoOriginal, request.GeradoPorIa, request.CorrecaoDoUsuario);
             return Json(new { sucesso = true, mensagem = "Feedback registado com sucesso. A IA aprendeu com esta alteração!" });
         }
@@ -94,6 +105,7 @@ namespace MinisterioShekinah.Web.Controllers
             ViewBag.NomeEvento = NomeEvento;
             ViewBag.CorLiturgica = CorLiturgica;
             ViewBag.SalmoRefrao = SalmoRefrao;
+
             if (musicasIds != null && musicasIds.Any())
             {
                 var selecionadas = OrdenarPorRitoLiturgico(
@@ -101,6 +113,7 @@ namespace MinisterioShekinah.Web.Controllers
                 );
                 return View(selecionadas);
             }
+
             var todas = OrdenarPorRitoLiturgico(_context.Musicas.ToList());
             return View(todas);
         }
@@ -121,9 +134,11 @@ namespace MinisterioShekinah.Web.Controllers
             {
                 dataCeleb = DateTime.Today;
             }
+
             var liturgia = await _liturgiaService.ObterLiturgiaPorDataAsync(dataCeleb);
             var todasMusicas = _context.Musicas.ToList();
             var sugestoes = _aiService.SugerirRepertorioPorLiturgia(todasMusicas, liturgia);
+
             Musica? salmoEncontrado = null;
             if (!string.IsNullOrWhiteSpace(liturgia.SalmoRefrao))
             {
@@ -131,16 +146,20 @@ namespace MinisterioShekinah.Web.Controllers
                     .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(p => p.Length > 4)
                     .ToList();
+
                 salmoEncontrado = todasMusicas
                     .Where(m => (m.MomentoLiturgico ?? "").Contains("Salmo", StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(m => palavrasRefrao.Count(p => $"{m.Titulo} {m.Cifra}".ToLower().Contains(p)))
                     .FirstOrDefault(m => palavrasRefrao.Any(p => $"{m.Titulo} {m.Cifra}".ToLower().Contains(p)));
+
                 if (salmoEncontrado != null)
                 {
                     sugestoes["Salmo Responsorial"] = salmoEncontrado;
                 }
             }
+
             var idsSugeridos = sugestoes.Values.Select(m => m.Id).Distinct().ToList();
+
             return Json(new
             {
                 sucesso = liturgia.Sucesso,
@@ -162,6 +181,7 @@ namespace MinisterioShekinah.Web.Controllers
             ViewBag.CorLiturgica = CorLiturgica;
             ViewBag.SalmoRefrao = SalmoRefrao;
             ViewBag.SalmoTexto = SalmoTexto;
+
             List<Musica> musicasSelecionadas;
             if (musicasIds != null && musicasIds.Any())
             {
@@ -174,6 +194,7 @@ namespace MinisterioShekinah.Web.Controllers
                 var repertorioAuto = _aiService.GerarRepertorioMissaAutomatico();
                 musicasSelecionadas = repertorioAuto.Values.Distinct().ToList();
             }
+
             return View(OrdenarPorRitoLiturgico(musicasSelecionadas));
         }
 
@@ -181,6 +202,7 @@ namespace MinisterioShekinah.Web.Controllers
         public IActionResult EnsaioInteligente(List<int>? musicasIds, string? NomeEvento)
         {
             ViewBag.NomeEvento = string.IsNullOrWhiteSpace(NomeEvento) ? "Repertório da Santa Missa" : NomeEvento;
+
             List<Musica> musicasSelecionadas;
             if (musicasIds != null && musicasIds.Any())
             {
@@ -193,6 +215,7 @@ namespace MinisterioShekinah.Web.Controllers
                 var repertorioAuto = _aiService.GerarRepertorioMissaAutomatico();
                 musicasSelecionadas = repertorioAuto.Values.Distinct().ToList();
             }
+
             var relatorioEnsaio = musicasSelecionadas.Select(m => {
                 var analise = _aiService.OrganizarCifra(m.Titulo, m.Cifra ?? "");
                 return new EnsaioItemViewModel
@@ -204,6 +227,7 @@ namespace MinisterioShekinah.Web.Controllers
                     SugestaoCapo = analise.SugestaoCapotraste
                 };
             }).ToList();
+
             return View(relatorioEnsaio);
         }
 
@@ -222,6 +246,7 @@ namespace MinisterioShekinah.Web.Controllers
             ViewBag.NomeEvento = string.IsNullOrWhiteSpace(NomeEvento) ? "Repertório da Santa Missa" : NomeEvento;
             ViewBag.CorLiturgica = CorLiturgica;
             ViewBag.SalmoRefrao = SalmoRefrao;
+
             List<Musica> musicasSelecionadas;
             if (musicasIds != null && musicasIds.Any())
             {
@@ -234,6 +259,7 @@ namespace MinisterioShekinah.Web.Controllers
                 var repertorioAuto = _aiService.GerarRepertorioMissaAutomatico();
                 musicasSelecionadas = repertorioAuto.Values.Distinct().ToList();
             }
+
             return View("Teleprompter", OrdenarPorRitoLiturgico(musicasSelecionadas));
         }
 
@@ -245,6 +271,7 @@ namespace MinisterioShekinah.Web.Controllers
                 "Aclamação", "Ofertório", "Santo", "Amém", "Cordeiro",
                 "Comunhão", "Pós-Comunhão", "Final", "Adoração"
             };
+
             int ObterPeso(string? momento)
             {
                 if (string.IsNullOrWhiteSpace(momento)) return 99;
@@ -255,6 +282,7 @@ namespace MinisterioShekinah.Web.Controllers
                 }
                 return 98;
             }
+
             return musicas.OrderBy(m => ObterPeso(m.MomentoLiturgico)).ThenBy(m => m.Titulo).ToList();
         }
 
@@ -282,6 +310,7 @@ namespace MinisterioShekinah.Web.Controllers
         public IActionResult Editar(int id, Musica musica)
         {
             if (id != musica.Id) return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
