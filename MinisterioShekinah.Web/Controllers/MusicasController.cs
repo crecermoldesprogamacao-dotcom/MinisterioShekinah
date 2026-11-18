@@ -43,7 +43,6 @@ namespace MinisterioShekinah.Web.Controllers
                     ModelState.AddModelError("", $"Esta música parece ser duplicada ou semelhante a '{nomeExistente}' já cadastrada no sistema.");
                     return View(musica);
                 }
-
                 if (!string.IsNullOrEmpty(musica.Cifra))
                 {
                     var resultado = _aiService.OrganizarCifra(musica.Titulo ?? "Sem Título", musica.Cifra);
@@ -54,7 +53,6 @@ namespace MinisterioShekinah.Web.Controllers
                         musica.MomentoLiturgico = resultado.MomentoSugerido;
                     }
                 }
-
                 _context.Musicas.Add(musica);
                 _context.SaveChanges();
                 return RedirectToAction("Repertorio", "Home");
@@ -70,7 +68,6 @@ namespace MinisterioShekinah.Web.Controllers
             {
                 return BadRequest(new { erro = "Insira a cifra antes de organizar." });
             }
-
             var resultado = _aiService.OrganizarCifra(request.Titulo ?? "Sem Título", request.Cifra);
             return Json(new
             {
@@ -79,6 +76,16 @@ namespace MinisterioShekinah.Web.Controllers
                 momentoSugerido = resultado.MomentoSugerido,
                 sugestaoCapotraste = resultado.SugestaoCapotraste
             });
+        }
+
+        // POST: Musicas/EnviarFeedbackIa (Regista o aprendizado contínuo)
+        [HttpPost]
+        public async Task<IActionResult> EnviarFeedbackIa([FromBody] FeedbackRequestDto request)
+        {
+            if (request == null) return BadRequest(new { sucesso = false });
+            // Corrigido para CorrecaoDoUsuario
+            await _aiService.RegistarFeedbackAsync(request.TipoAcao, request.TextoOriginal, request.GeradoPorIa, request.CorrecaoDoUsuario);
+            return Json(new { sucesso = true, mensagem = "Feedback registado com sucesso. A IA aprendeu com esta alteração!" });
         }
 
         // GET ou POST: Musicas/ModoMusico (Modo Altar)
@@ -297,6 +304,14 @@ namespace MinisterioShekinah.Web.Controllers
     {
         public string? Titulo { get; set; }
         public string? Cifra { get; set; }
+    }
+
+    public class FeedbackRequestDto
+    {
+        public string TipoAcao { get; set; } = string.Empty;
+        public string TextoOriginal { get; set; } = string.Empty;
+        public string GeradoPorIa { get; set; } = string.Empty;
+        public string CorrecaoDoUsuario { get; set; } = string.Empty;
     }
 
     public class EnsaioItemViewModel

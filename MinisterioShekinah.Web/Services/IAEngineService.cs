@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MinisterioShekinah.Web.Data;
 using MinisterioShekinah.Web.Models;
 using System.Text.RegularExpressions;
 
@@ -17,7 +19,14 @@ namespace MinisterioShekinah.Web.Services
 
     public class IAEngineService
     {
-        // 1. Moderação Automática de Texto (Filtro de segurança e spam)
+        private readonly ShekinahContext _context;
+
+        public IAEngineService(ShekinahContext context)
+        {
+            _context = context;
+        }
+
+        // 1. Moderação Automática de Texto
         public bool ValidarTextoSeguro(string texto)
         {
             if (string.IsNullOrWhiteSpace(texto)) return false;
@@ -58,16 +67,38 @@ namespace MinisterioShekinah.Web.Services
             return "Obrigado pela sua mensagem! O Ministério Shekinah está em constante oração pelas suas intenções.";
         }
 
-        // 4. Inteligência de Cifras e Análise
+        // 4. Inteligência de Cifras e Análise (com consulta ao histórico de aprendizado)
         public CifraResultadoDto OrganizarCifra(string titulo, string cifraBruta)
         {
             if (string.IsNullOrWhiteSpace(cifraBruta))
                 return new CifraResultadoDto();
 
-            // Limpeza básica e padronização inteligente
-            string cifraLimpa = cifraBruta.Replace("\r\n", "\n");
+            // Verifica se já existe uma correção anterior aprovada pelo utilizador para esta cifra (Memória/RAG)
+            var correcaoHistorica = _context.FeedbacksAprendizado
+                .Where(f => f.TipoAcao == "OrganizacaoCifra" && f.TextoOriginal == cifraBruta)
+                .OrderByDescending(f => f.DataCriacao)
+                .Select(f => f.CorrecaoDoUsuario)
+                .FirstOrDefault();
 
-            // Deteção simples de tom base (ex: procura por Tom: X)
+            if (!string.IsNullOrEmpty(correcaoHistorica))
+            {
+                string tomHistorico = "C";
+                var matchTomH = Regex.Match(correcaoHistorica, @"Tom:\s*([A-G][#b]?[m]?)", RegexOptions.IgnoreCase);
+                if (matchTomH.Success) tomHistorico = matchTomH.Groups[1].Value.ToUpper();
+
+                return new CifraResultadoDto
+                {
+                    CifraFormatada = correcaoHistorica,
+                    TomDetectado = tomHistorico,
+                    MomentoSugerido = "Geral",
+                    DificuldadeNivel = "Intermédio",
+                    TessituraSugerida = "Confortável",
+                    RitmoSugerido = "84 BPM",
+                    SugestaoCapotraste = "0"
+                };
+            }
+
+            string cifraLimpa = cifraBruta.Replace("\r\n", "\n");
             string tom = "C";
             var matchTom = Regex.Match(cifraBruta, @"Tom:\s*([A-G][#b]?[m]?)", RegexOptions.IgnoreCase);
             if (matchTom.Success)
@@ -75,7 +106,6 @@ namespace MinisterioShekinah.Web.Services
                 tom = matchTom.Groups[1].Value.ToUpper();
             }
 
-            // Sugestão de momento litúrgico com base no título ou conteúdo
             string momento = "Geral";
             string tLower = titulo.ToLower();
             if (tLower.Contains("gloria") || tLower.Contains("glória")) momento = "Glória";
@@ -98,29 +128,43 @@ namespace MinisterioShekinah.Web.Services
             };
         }
 
+        // 5. Registo de Feedback (Aprendizado Contínuo)
+        public async Task RegistarFeedbackAsync(string tipoAcao, string textoOriginal, string geradoPorIa, string correcaoUsuario)
+        {
+            if (string.IsNullOrWhiteSpace(correcaoUsuario)) return;
+
+            var feedback = new FeedbackAprendizadoIa
+            {
+                TipoAcao = tipoAcao,
+                TextoOriginal = textoOriginal,
+                RespostaGeradaPorIa = geradoPorIa,
+                CorrecaoDoUsuario = correcaoUsuario,
+                DataCriacao = DateTime.UtcNow
+            };
+
+            _context.FeedbacksAprendizado.Add(feedback);
+            await _context.SaveChangesAsync();
+        }
+
         public bool VerificarMusicaDuplicada(string titulo, string cifra, out string nomeExistente)
         {
             nomeExistente = string.Empty;
             return false;
         }
 
-        // 5. Sugestão Inteligente de Repertório por Liturgia
+        // 6. Sugestão Inteligente de Repertório por Liturgia
         public Dictionary<string, Musica> SugerirRepertorioPorLiturgia(List<Musica> todasMusicas, dynamic liturgia)
         {
             var repertorioSugerido = new Dictionary<string, Musica>();
             if (todasMusicas == null || !todasMusicas.Any()) return repertorioSugerido;
-
             string liturgiaTitulo = ((object)liturgia?.Liturgia ?? "").ToString().ToLower();
 
-            // Percorre as músicas cadastradas para encontrar correspondências temáticas
             foreach (var musica in todasMusicas)
             {
                 string momento = (musica.MomentoLiturgico ?? "").Trim();
                 string textoMusica = $"{musica.Titulo} {musica.Cifra}".ToLower();
-
                 if (string.IsNullOrEmpty(momento)) continue;
 
-                // Evita duplicar o mesmo momento litúrgico
                 if (!repertorioSugerido.ContainsKey(momento))
                 {
                     if (momento.Equals("Entrada", StringComparison.OrdinalIgnoreCase))
@@ -133,7 +177,6 @@ namespace MinisterioShekinah.Web.Services
                 }
             }
 
-            // Garante que os principais momentos da Missa fiquem preenchidos com as músicas registadas
             var momentosObrigatorios = new[] { "Entrada", "Ato Penitencial", "Glória", "Salmo Responsorial", "Aclamação ao Evangelho", "Ofertório", "Santo", "Cordeiro de Deus", "Comunhão", "Final / Envio" };
             foreach (var mom in momentosObrigatorios)
             {
@@ -146,7 +189,6 @@ namespace MinisterioShekinah.Web.Services
                     }
                 }
             }
-
             return repertorioSugerido;
         }
 

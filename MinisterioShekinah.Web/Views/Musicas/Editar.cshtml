@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Editar Música";
 }
-
 <div class="container my-5" style="max-width: 800px;">
     <div class="card bg-dark border-warning shadow-lg p-4 rounded-4">
         <div class="card-body">
@@ -14,10 +13,9 @@
                 
                 <div class="mb-3">
                     <label asp-for="Titulo" class="form-label text-warning fw-bold">Título da Música</label>
-                    <input asp-for="Titulo" class="form-control bg-black text-light border-secondary" required />
+                    <input asp-for="Titulo" id="Titulo" class="form-control bg-black text-light border-secondary" required />
                     <span asp-validation-for="Titulo" class="text-danger"></span>
                 </div>
-
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="Artista" class="form-label text-warning fw-bold">Artista / Ministério</label>
@@ -25,7 +23,7 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <label asp-for="TomOriginal" class="form-label text-warning fw-bold">Tom Original</label>
-                        <input asp-for="TomOriginal" class="form-control bg-black text-light border-secondary" required />
+                        <input asp-for="TomOriginal" id="TomOriginal" class="form-control bg-black text-light border-secondary" required />
                         <span asp-validation-for="TomOriginal" class="text-danger"></span>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -33,10 +31,9 @@
                         <input asp-for="Capotraste" type="number" min="0" max="12" class="form-control bg-black text-light border-secondary" />
                     </div>
                 </div>
-
                 <div class="mb-3">
                     <label asp-for="MomentoLiturgico" class="form-label text-warning fw-bold">Momento Litúrgico / Canto</label>
-                    <select asp-for="MomentoLiturgico" class="form-select bg-black text-light border-secondary">
+                    <select asp-for="MomentoLiturgico" id="MomentoLiturgico" class="form-select bg-black text-light border-secondary">
                         <option value="">Selecione o momento da Missa (Opcional)...</option>
                         <option value="Entrada">Entrada</option>
                         <option value="Ato Penitencial">Ato Penitencial</option>
@@ -52,25 +49,27 @@
                         <option value="Adoração / Louvor Geral">Adoração / Louvor Geral</option>
                     </select>
                 </div>
-
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <label asp-for="Cifra" class="form-label text-warning fw-bold mb-0">Cifra com Acordes entre Colchetes</label>
-                        <button type="button" id="btnOrganizarIa" class="btn btn-sm btn-outline-warning fw-bold">
-                            ✨ Organizar com IA
-                        </button>
+                        <div>
+                            <button type="button" id="btnOrganizarIa" class="btn btn-sm btn-outline-warning fw-bold me-1">
+                                ✨ Organizar com IA
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info fw-bold" onclick="enviarFeedbackIaParaSistema()">
+                                💡 Ensinar IA
+                            </button>
+                        </div>
                     </div>
                     <div id="statusIa" class="small mb-2" style="display: none;"></div>
-                    <textarea asp-for="Cifra" rows="10" class="form-control bg-black text-light border-secondary font-monospace" required></textarea>
+                    <textarea asp-for="Cifra" id="Cifra" rows="10" class="form-control bg-black text-light border-secondary font-monospace" required></textarea>
                     <small class="text-muted">Dica: Coloque os acordes entre parênteses rectos (ex: `[G]`, `[D/F#]`) para transposição automática.</small>
                     <span asp-validation-for="Cifra" class="text-danger"></span>
                 </div>
-
                 <div class="mb-4">
                     <label asp-for="PartituraUrl" class="form-label text-warning fw-bold">Link da Partitura (Opcional)</label>
                     <input asp-for="PartituraUrl" class="form-control bg-black text-light border-secondary" />
                 </div>
-
                 <div class="d-flex justify-content-between">
                     <a asp-controller="Home" asp-action="Repertorio" class="btn btn-outline-light">Voltar ao Repertório</a>
                     <button type="submit" class="btn btn-warning text-dark fw-bold px-4">Guardar Alterações</button>
@@ -79,7 +78,6 @@
         </div>
     </div>
 </div>
-
 <style>
     body {
         background-color: #121212;
@@ -93,7 +91,6 @@
         box-shadow: 0 0 0 0.25rem rgba(223, 178, 53, 0.25);
     }
 </style>
-
 @section Scripts {
     <script>
         document.getElementById('btnOrganizarIa').addEventListener('click', async function() {
@@ -103,18 +100,15 @@
             const cifraInput = document.getElementById('Cifra');
             const tomInput = document.getElementById('TomOriginal');
             const momentoSelect = document.getElementById('MomentoLiturgico');
-
             if (!cifraInput.value.trim()) {
                 statusDiv.style.display = 'block';
                 statusDiv.className = 'small mb-2 text-danger';
                 statusDiv.textContent = 'Cole a letra ou cifra antes de clicar em Organizar com IA.';
                 return;
             }
-
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> A organizar...';
             statusDiv.style.display = 'none';
-
             try {
                 const response = await fetch('@Url.Action("OrganizarComIa", "Musicas")', {
                     method: 'POST',
@@ -124,16 +118,12 @@
                         cifra: cifraInput.value
                     })
                 });
-
                 const data = await response.json();
-
                 if (!response.ok) {
                     throw new Error(data.erro || 'Erro ao processar a cifra.');
                 }
-
                 if (data.cifraFormatada) cifraInput.value = data.cifraFormatada;
                 if (data.tomDetectado) tomInput.value = data.tomDetectado;
-
                 if (data.momentoSugerido && data.momentoSugerido !== 'Outro') {
                     const mapaMomentos = {
                         'Glória': 'Hino de Louvor (Glória)',
@@ -143,7 +133,6 @@
                         'Adoração': 'Adoração / Louvor Geral'
                     };
                     const valorAlvo = mapaMomentos[data.momentoSugerido] || data.momentoSugerido;
-
                     for (let i = 0; i < momentoSelect.options.length; i++) {
                         if (momentoSelect.options[i].value === valorAlvo) {
                             momentoSelect.selectedIndex = i;
@@ -151,7 +140,6 @@
                         }
                     }
                 }
-
                 statusDiv.style.display = 'block';
                 statusDiv.className = 'small mb-2 text-success';
                 statusDiv.textContent = `✨ Cifra organizada! Tom detetado: ${data.tomDetectado} | Momento sugerido: ${data.momentoSugerido}`;
@@ -164,5 +152,43 @@
                 btn.innerHTML = '✨ Organizar com IA';
             }
         });
+
+        async function enviarFeedbackIaParaSistema() {
+            const titulo = document.getElementById('Titulo').value;
+            const cifraAtual = document.getElementById('Cifra').value;
+
+            if (!cifraAtual.trim()) {
+                alert("A cifra não pode estar vazia para enviar feedback.");
+                return;
+            }
+
+            if (!confirm("Deseja registar esta correção para que a IA aprenda a formatar assim da próxima vez?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("EnviarFeedbackIa", "Musicas")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tipoAcao: "OrganizacaoCifra",
+                        textoOriginal: titulo,
+                        geradoPorIa: "",
+                        correcaoDoUsuario: cifraAtual
+                    })
+                });
+
+                const data = await response.json();
+                if (data.sucesso) {
+                    alert("✨ Feedback guardado com sucesso! A IA aprendeu com esta alteração.");
+                } else {
+                    alert("Erro ao guardar o feedback.");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Ocorreu um erro de rede ao tentar enviar o feedback.");
+            }
+        }
     </script>
 }
+[cite: 13]
