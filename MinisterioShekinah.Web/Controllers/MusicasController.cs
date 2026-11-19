@@ -57,5 +57,53 @@ namespace MinisterioShekinah.Web.Controllers
             }
             return View(musica);
         }
+
+        // GET: Musicas/Editar/5
+        public async Task<IActionResult> Editar(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var musica = await _context.Musicas.FindAsync(id);
+            if (musica == null) return NotFound();
+
+            return View(musica);
+        }
+
+        // POST: Musicas/Editar/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Editar(int id, Musica musica)
+        {
+            if (id != musica.Id) return NotFound();
+
+            // Processamento inteligente da cifra via IAEngineService ao editar
+            if (!string.IsNullOrEmpty(musica.Cifra))
+            {
+                var resultadoIa = _iaEngineService.OrganizarCifra(musica.Titulo, musica.Cifra);
+                musica.Cifra = resultadoIa.CifraFormatada;
+                if (string.IsNullOrEmpty(musica.MomentoLiturgico))
+                {
+                    musica.MomentoLiturgico = resultadoIa.MomentoSugerido;
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(musica);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Musicas.Any(e => e.Id == musica.Id))
+                        return NotFound();
+                    else
+                        throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(musica);
+        }
     }
 }
