@@ -104,17 +104,58 @@ namespace MinisterioShekinah.Web.Controllers
             return View(musica);
         }
 
-        // GET: Musicas/ModoMusico
-        public async Task<IActionResult> ModoMusico()
+        // GET: Musicas/Detalhes/5
+        public async Task<IActionResult> Detalhes(int? id)
         {
-            var musicas = await _context.Musicas.ToListAsync();
-            return View(musicas);
+            if (id == null) return NotFound();
+
+            var musica = await _context.Musicas.FirstOrDefaultAsync(m => m.Id == id);
+            if (musica == null) return NotFound();
+
+            return View(musica);
+        }
+
+        // GET: Musicas/Teleprompter/5
+        public async Task<IActionResult> Teleprompter(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var musica = await _context.Musicas.FirstOrDefaultAsync(m => m.Id == id);
+            if (musica == null) return NotFound();
+
+            return View(musica);
+        }
+
+        // GET: Musicas/TeleprompterMissa
+        public async Task<IActionResult> TeleprompterMissa([FromQuery] List<int> musicasIds, string? nomeEvento, string? corLiturgica)
+        {
+            ViewBag.NomeEvento = nomeEvento ?? "Missa Dominical";
+            ViewBag.CorLiturgica = corLiturgica ?? "Comum";
+
+            if (musicasIds == null || !musicasIds.Any())
+            {
+                var todas = await _context.Musicas.ToListAsync();
+                return View(todas);
+            }
+
+            var musicasSelecionadas = await _context.Musicas
+                .Where(m => musicasIds.Contains(m.Id))
+                .ToListAsync();
+
+            return View(musicasSelecionadas);
         }
 
         // GET: Musicas/GerarMissal
         public IActionResult GerarMissal()
         {
             return View();
+        }
+
+        // GET: Musicas/ModoAltar
+        public async Task<IActionResult> ModoAltar()
+        {
+            var musicas = await _context.Musicas.ToListAsync();
+            return View(musicas);
         }
 
         // Endpoint JSON para o botão "Organizar com IA"
@@ -127,7 +168,13 @@ namespace MinisterioShekinah.Web.Controllers
             }
 
             var resultado = _iaEngineService.OrganizarCifra(request.Titulo ?? "Sem Título", request.Cifra);
-            return Json(new { sucesso = true, cifraFormatada = resultado.CifraFormatada, tomDetectado = resultado.TomDetectado, momentoSugerido = resultado.MomentoSugerido });
+            return Json(new
+            {
+                sucesso = true,
+                cifraFormatada = resultado.CifraFormatada,
+                tomDetectado = resultado.TomDetectado,
+                momentoSugerido = resultado.MomentoSugerido
+            });
         }
     }
 
