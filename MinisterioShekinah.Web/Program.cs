@@ -27,7 +27,7 @@ builder.Services.AddSession(options =>
 
 // 2. Configuração do banco de dados local SQLite com DbContext
 builder.Services.AddDbContext<ShekinahContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
