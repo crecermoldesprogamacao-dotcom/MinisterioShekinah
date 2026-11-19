@@ -23,7 +23,6 @@ namespace MinisterioShekinah.Web.Controllers
                 .Include(e => e.Escala)
                 .OrderBy(e => e.DataHora)
                 .ToListAsync();
-
             return View(missas);
         }
 
@@ -35,7 +34,6 @@ namespace MinisterioShekinah.Web.Controllers
                 _context.Add(evento);
                 await _context.SaveChangesAsync();
             }
-
             var missas = await _context.EventosMissas.Include(e => e.Repertorio).Include(e => e.Escala).OrderBy(e => e.DataHora).ToListAsync();
             if (Request.Headers["HX-Request"] == "true")
             {
@@ -59,7 +57,6 @@ namespace MinisterioShekinah.Web.Controllers
                 _context.Repertorios.Add(musica);
                 await _context.SaveChangesAsync();
             }
-
             var missas = await _context.EventosMissas.Include(e => e.Repertorio).Include(e => e.Escala).OrderBy(e => e.DataHora).ToListAsync();
             if (Request.Headers["HX-Request"] == "true")
             {
@@ -83,7 +80,6 @@ namespace MinisterioShekinah.Web.Controllers
                 _context.Escalas.Add(musico);
                 await _context.SaveChangesAsync();
             }
-
             var missas = await _context.EventosMissas.Include(e => e.Repertorio).Include(e => e.Escala).OrderBy(e => e.DataHora).ToListAsync();
             if (Request.Headers["HX-Request"] == "true")
             {
@@ -101,7 +97,6 @@ namespace MinisterioShekinah.Web.Controllers
                 musico.Confirmado = !musico.Confirmado;
                 await _context.SaveChangesAsync();
             }
-
             var missas = await _context.EventosMissas.Include(e => e.Repertorio).Include(e => e.Escala).OrderBy(e => e.DataHora).ToListAsync();
             if (Request.Headers["HX-Request"] == "true")
             {

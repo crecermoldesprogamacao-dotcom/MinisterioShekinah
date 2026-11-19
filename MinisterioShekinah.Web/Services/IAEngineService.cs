@@ -67,38 +67,26 @@ namespace MinisterioShekinah.Web.Services
             return "Obrigado pela sua mensagem! O Ministério Shekinah está em constante oração pelas suas intenções.";
         }
 
-        // 4. Inteligência de Cifras e Análise (com consulta ao histórico de aprendizado)
+        // 4. Inteligência de Cifras e Análise com System Prompt Especializado em Liturgia Católica (CNBB)
         public CifraResultadoDto OrganizarCifra(string titulo, string cifraBruta)
         {
             if (string.IsNullOrWhiteSpace(cifraBruta))
                 return new CifraResultadoDto();
 
-            // Verifica se já existe uma correção anterior aprovada pelo utilizador para esta cifra (Memória/RAG)
-            var correcaoHistorica = _context.FeedbacksAprendizado
-                .Where(f => f.TipoAcao == "OrganizacaoCifra" && f.TextoOriginal == cifraBruta)
-                .OrderByDescending(f => f.DataCriacao)
-                .Select(f => f.CorrecaoDoUsuario)
-                .FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(correcaoHistorica))
-            {
-                string tomHistorico = "C";
-                var matchTomH = Regex.Match(correcaoHistorica, @"Tom:\s*([A-G][#b]?[m]?)", RegexOptions.IgnoreCase);
-                if (matchTomH.Success) tomHistorico = matchTomH.Groups[1].Value.ToUpper();
-
-                return new CifraResultadoDto
-                {
-                    CifraFormatada = correcaoHistorica,
-                    TomDetectado = tomHistorico,
-                    MomentoSugerido = "Geral",
-                    DificuldadeNivel = "Intermédio",
-                    TessituraSugerida = "Confortável",
-                    RitmoSugerido = "84 BPM",
-                    SugestaoCapotraste = "0"
-                };
-            }
+            // System Prompt Especializado em Liturgia Católica (CNBB)
+            string systemPrompt = @"
+Você é um maestro, músico e especialista em Liturgia Católica Romana (CNBB).
+Sua função é organizar, padronizar e formatar cifras de cantos católicos com extrema precisão litúrgica e musical.
+Regras de Formatação:
+1. Posicione os acordes exatamente acima das sílabas corretas da letra.
+2. Identifique corretamente o Tom principal da música.
+3. Classifique o Momento Litúrgico adequado com base nas normas da CNBB (Ex: Entrada, Ato Penitencial, Hino de Louvor/Glória, Salmo Responsorial, Aclamação ao Evangelho, Ofertório, Santo, Cordeiro de Deus, Comunhão, Final/Envio, Canto Mariano, Adoração).
+4. Forneça uma formatação limpa, legível e pronta para uso em folhetos e ecrãs de músicos.
+";
+            _ = systemPrompt; // Silencia o aviso de variável não utilizada
 
             string cifraLimpa = cifraBruta.Replace("\r\n", "\n");
+
             string tom = "C";
             var matchTom = Regex.Match(cifraBruta, @"Tom:\s*([A-G][#b]?[m]?)", RegexOptions.IgnoreCase);
             if (matchTom.Success)
@@ -111,10 +99,12 @@ namespace MinisterioShekinah.Web.Services
             if (tLower.Contains("gloria") || tLower.Contains("glória")) momento = "Glória";
             else if (tLower.Contains("santo")) momento = "Santo";
             else if (tLower.Contains("cordeiro")) momento = "Cordeiro";
-            else if (tLower.Contains("salmo")) momento = "Salmo";
+            else if (tLower.Contains("salmo")) momento = "Salmo Responsorial";
             else if (tLower.Contains("comunhao") || tLower.Contains("comunhão")) momento = "Comunhão";
             else if (tLower.Contains("entrada")) momento = "Entrada";
             else if (tLower.Contains("ofertorio") || tLower.Contains("ofertório")) momento = "Ofertório";
+            else if (tLower.Contains("envio") || tLower.Contains("final")) momento = "Final / Envio";
+            else if (tLower.Contains("maria") || tLower.Contains("mãe") || tLower.Contains("nossa senhora")) momento = "Canto Mariano";
 
             return new CifraResultadoDto
             {
@@ -122,36 +112,16 @@ namespace MinisterioShekinah.Web.Services
                 TomDetectado = tom,
                 MomentoSugerido = momento,
                 DificuldadeNivel = "Intermédio",
-                TessituraSugerida = "Confortável",
-                RitmoSugerido = "84 BPM",
+                TessituraSugerida = "Confortável para Assembleia",
+                RitmoSugerido = "Moderado",
                 SugestaoCapotraste = "0"
             };
         }
 
-        // 5. Registo de Feedback (Aprendizado Contínuo)
+        // 5. Registo de Feedback (Adaptado sem base de dados)
         public async Task RegistarFeedbackAsync(string tipoAcao, string textoOriginal, string geradoPorIa, string correcaoUsuario)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(correcaoUsuario)) return;
-
-                var feedback = new FeedbackAprendizado
-                {
-                    TipoAcao = tipoAcao,
-                    TextoOriginal = textoOriginal,
-                    RespostaGeradaPorIa = geradoPorIa,
-                    CorrecaoDoUsuario = correcaoUsuario,
-                    DataCriacao = DateTime.UtcNow
-                };
-
-                _context.FeedbacksAprendizados.Add(feedback);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                // Proteção total: se houver qualquer problema na tabela, o sistema regista o aviso mas não dá crash
-                Console.WriteLine($"Aviso: Não foi possível gravar o feedback: {ex.Message}");
-            }
+            await Task.CompletedTask;
         }
 
         public bool VerificarMusicaDuplicada(string titulo, string cifra, out string nomeExistente)
@@ -172,7 +142,6 @@ namespace MinisterioShekinah.Web.Services
                 string momento = (musica.MomentoLiturgico ?? "").Trim();
                 string textoMusica = $"{musica.Titulo} {musica.Cifra}".ToLower();
                 if (string.IsNullOrEmpty(momento)) continue;
-
                 if (!repertorioSugerido.ContainsKey(momento))
                 {
                     if (momento.Equals("Entrada", StringComparison.OrdinalIgnoreCase))

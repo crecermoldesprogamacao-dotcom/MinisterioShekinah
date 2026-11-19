@@ -138,38 +138,6 @@ namespace MinisterioShekinah.Web.Migrations
                     b.ToTable("EventosMissas");
                 });
 
-            modelBuilder.Entity("MinisterioShekinah.Web.Models.FeedbackAprendizadoIa", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CorrecaoDoUsuario")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("RespostaGeradaPorIa")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TextoOriginal")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TipoAcao")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FeedbacksAprendizado");
-                });
-
             modelBuilder.Entity("MinisterioShekinah.Web.Models.MembroEquipe", b =>
                 {
                     b.Property<int>("Id")
