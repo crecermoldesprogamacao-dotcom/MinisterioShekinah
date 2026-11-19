@@ -38,7 +38,6 @@ namespace MinisterioShekinah.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar(Musica musica)
         {
-            // Processamento inteligente da cifra e momento litúrgico via IAEngineService (CNBB)
             if (!string.IsNullOrEmpty(musica.Cifra))
             {
                 var resultadoIa = _iaEngineService.OrganizarCifra(musica.Titulo, musica.Cifra);
@@ -76,7 +75,6 @@ namespace MinisterioShekinah.Web.Controllers
         {
             if (id != musica.Id) return NotFound();
 
-            // Processamento inteligente da cifra via IAEngineService ao editar
             if (!string.IsNullOrEmpty(musica.Cifra))
             {
                 var resultadoIa = _iaEngineService.OrganizarCifra(musica.Titulo, musica.Cifra);
@@ -105,5 +103,37 @@ namespace MinisterioShekinah.Web.Controllers
             }
             return View(musica);
         }
+
+        // GET: Musicas/ModoMusico
+        public async Task<IActionResult> ModoMusico()
+        {
+            var musicas = await _context.Musicas.ToListAsync();
+            return View(musicas);
+        }
+
+        // GET: Musicas/GerarMissal
+        public IActionResult GerarMissal()
+        {
+            return View();
+        }
+
+        // Endpoint JSON para o botão "Organizar com IA"
+        [HttpPost]
+        public JsonResult OrganizarCifraAjax([FromBody] CifraRequestDto request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.Cifra))
+            {
+                return Json(new { sucesso = false, mensagem = "Cifra vazia ou inválida." });
+            }
+
+            var resultado = _iaEngineService.OrganizarCifra(request.Titulo ?? "Sem Título", request.Cifra);
+            return Json(new { sucesso = true, cifraFormatada = resultado.CifraFormatada, tomDetectado = resultado.TomDetectado, momentoSugerido = resultado.MomentoSugerido });
+        }
+    }
+
+    public class CifraRequestDto
+    {
+        public string Titulo { get; set; } = string.Empty;
+        public string Cifra { get; set; } = string.Empty;
     }
 }
