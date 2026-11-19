@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Adicionar os serviços necessários ao container do ASP.NET Core
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<CifraAiService>();
 builder.Services.AddHttpClient<LiturgiaService>();
 builder.Services.AddScoped<IAEngineService>();
 builder.Services.AddAuthorization();
