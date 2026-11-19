@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Adicionar os serviços necessários ao container do ASP.NET Core
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<CifraAiService>();
 builder.Services.AddHttpClient<LiturgiaService>();
 builder.Services.AddScoped<IAEngineService>();
 builder.Services.AddAuthorization();
@@ -24,28 +25,26 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-/// 2. Configuração direta do banco de dados PostgreSQL do Render (Formato Chave=Valor)
-var connectionString = "Host=dpg-dbm7d6l6e07s73bcmjq0-a;Database=ministerio_shekinah_db;Username=ministerio_shekinah_db_user;Password=M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB;Port=5432;SSL Mode=Prefer;Trust Server Certificate=true";
-
+// 2. Configuração do banco de dados local SQLite com DbContext
 builder.Services.AddDbContext<ShekinahContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Bloco de verificação e criação automática do banco de dados
+// Bloco de criação automática do banco SQLite local
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ShekinahContext>();
-
+        // Cria o arquivo ministerioshekinah.db e todas as tabelas se ainda não existirem
         context.Database.EnsureCreated();
-        Console.WriteLine("--> Banco de dados PostgreSQL verificado e criado com sucesso!");
+        Console.WriteLine("--> Banco de dados SQLite local verificado e criado com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> AVISO NA CRIAÇÃO DO BANCO POSTGRESQL: {ex.Message}");
+        Console.WriteLine($"--> AVISO NA CRIAÇÃO DO BANCO LOCAL: {ex.Message}");
     }
 }
 
@@ -61,7 +60,6 @@ else
 }
 
 app.UseStaticFiles();
-
 app.UseRouting();
 
 // Ativar o middleware de Sessão

@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using MinisterioShekinah.Web.Data;
 using MinisterioShekinah.Web.Models;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace MinisterioShekinah.Web.Services
 {
@@ -73,20 +77,7 @@ namespace MinisterioShekinah.Web.Services
             if (string.IsNullOrWhiteSpace(cifraBruta))
                 return new CifraResultadoDto();
 
-            // System Prompt Especializado em Liturgia Católica (CNBB)
-            string systemPrompt = @"
-Você é um maestro, músico e especialista em Liturgia Católica Romana (CNBB).
-Sua função é organizar, padronizar e formatar cifras de cantos católicos com extrema precisão litúrgica e musical.
-Regras de Formatação:
-1. Posicione os acordes exatamente acima das sílabas corretas da letra.
-2. Identifique corretamente o Tom principal da música.
-3. Classifique o Momento Litúrgico adequado com base nas normas da CNBB (Ex: Entrada, Ato Penitencial, Hino de Louvor/Glória, Salmo Responsorial, Aclamação ao Evangelho, Ofertório, Santo, Cordeiro de Deus, Comunhão, Final/Envio, Canto Mariano, Adoração).
-4. Forneça uma formatação limpa, legível e pronta para uso em folhetos e ecrãs de músicos.
-";
-            _ = systemPrompt; // Silencia o aviso de variável não utilizada
-
             string cifraLimpa = cifraBruta.Replace("\r\n", "\n");
-
             string tom = "C";
             var matchTom = Regex.Match(cifraBruta, @"Tom:\s*([A-G][#b]?[m]?)", RegexOptions.IgnoreCase);
             if (matchTom.Success)
@@ -95,7 +86,7 @@ Regras de Formatação:
             }
 
             string momento = "Geral";
-            string tLower = titulo.ToLower();
+            string tLower = (titulo ?? "").ToLower();
             if (tLower.Contains("gloria") || tLower.Contains("glória")) momento = "Glória";
             else if (tLower.Contains("santo")) momento = "Santo";
             else if (tLower.Contains("cordeiro")) momento = "Cordeiro";
@@ -118,7 +109,7 @@ Regras de Formatação:
             };
         }
 
-        // 5. Registo de Feedback (Adaptado sem base de dados)
+        // 5. Registo de Feedback (Adaptado após remoção de FeedbackAprendizado)
         public async Task RegistarFeedbackAsync(string tipoAcao, string textoOriginal, string geradoPorIa, string correcaoUsuario)
         {
             await Task.CompletedTask;
@@ -136,7 +127,6 @@ Regras de Formatação:
             var repertorioSugerido = new Dictionary<string, Musica>();
             if (todasMusicas == null || !todasMusicas.Any()) return repertorioSugerido;
             string liturgiaTitulo = ((object)liturgia?.Liturgia ?? "").ToString().ToLower();
-
             foreach (var musica in todasMusicas)
             {
                 string momento = (musica.MomentoLiturgico ?? "").Trim();
@@ -153,7 +143,6 @@ Regras de Formatação:
                     }
                 }
             }
-
             var momentosObrigatorios = new[] { "Entrada", "Ato Penitencial", "Glória", "Salmo Responsorial", "Aclamação ao Evangelho", "Ofertório", "Santo", "Cordeiro de Deus", "Comunhão", "Final / Envio" };
             foreach (var mom in momentosObrigatorios)
             {
