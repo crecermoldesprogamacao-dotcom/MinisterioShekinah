@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Adicionar os serviços necessários ao container do ASP.NET Core
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<CifraAiService>();
 builder.Services.AddHttpClient<LiturgiaService>();
 builder.Services.AddScoped<IAEngineService>();
 builder.Services.AddAuthorization();
@@ -24,7 +25,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// 2. Configuração direta do banco de dados PostgreSQL do Render (Formato Chave=Valor)
+/// 2. Configuração direta do banco de dados PostgreSQL do Render (Formato Chave=Valor)
 var connectionString = "Host=dpg-dbm7d6l6e07s73bcmjq0-a;Database=ministerio_shekinah_db;Username=ministerio_shekinah_db_user;Password=M6mFlNXNtA8H6LanRGOH9UsmL94N2EcB;Port=5432;SSL Mode=Prefer;Trust Server Certificate=true";
 
 builder.Services.AddDbContext<ShekinahContext>(options =>
